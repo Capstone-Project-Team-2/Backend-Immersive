@@ -1,9 +1,9 @@
 package main
 
 import (
-	"capstone-tickets/app/config"
-	"capstone-tickets/app/database"
-	"capstone-tickets/app/router"
+	"capstone-tickets/apps/config"
+	"capstone-tickets/apps/database"
+	"capstone-tickets/apps/router"
 
 	"github.com/labstack/echo/v4"
 )
