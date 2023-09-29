@@ -1,7 +1,7 @@
 package database
 
 import (
-	"capstone-tickets/app/config"
+	"capstone-tickets/apps/config"
 	adminModel "capstone-tickets/features/admins/data"
 	buyerModel "capstone-tickets/features/buyers/data"
 	eventModel "capstone-tickets/features/events/data"
