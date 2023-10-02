@@ -19,5 +19,7 @@ func InitRouter(db *gorm.DB, c *echo.Echo) {
 	partnerService := _partnerService.New(partnerData)
 	partnerHandlerAPI := _partnerHandler.New(partnerService)
 
+	c.POST("/login_partners", partnerHandlerAPI.Login)
 	c.POST("/partners", partnerHandlerAPI.Add)
+	c.GET("/partners/:partner_id", partnerHandlerAPI.Get)
 }

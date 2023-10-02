@@ -22,7 +22,7 @@ func New(service partners.PartnerServiceInterface) *PartnerHandler {
 
 func (handler *PartnerHandler) Login(c echo.Context) error {
 	var login PartnerLoginrequest
-	errBind := c.Bind(login)
+	errBind := c.Bind(&login)
 	if errBind != nil {
 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
 	}
@@ -86,3 +86,29 @@ func (handler *PartnerHandler) Add(c echo.Context) error {
 	}
 	return c.JSON(http.StatusCreated, helpers.WebResponse(http.StatusCreated, "operation success", nil))
 }
+
+func (handler *PartnerHandler) Get(c echo.Context) error {
+	id := c.Param("partner_id")
+	result, err := handler.PartnerService.Get(id)
+	if err != nil {
+		if strings.Contains(err.Error(), "no row affected") {
+			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
+		}
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
+	}
+	var partnerResponse = PartnerCoreToResponse(result)
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", partnerResponse))
+}
+
+func (handler *PartnerHandler) Delete(c echo.Context) error {
+	id := c.Param("partner_id")
+	err := handler.PartnerService.Delete(id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
+	}
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", nil))
+}
+
+// func (handler *PartnerHandler) Update(c echo.Context) error {
+// 	handler.PartnerService.Update()
+// }
