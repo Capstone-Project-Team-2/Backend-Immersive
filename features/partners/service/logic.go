@@ -46,6 +46,7 @@ func (service *PartnerService) GetAll() ([]partners.PartnerCore, error) {
 }
 
 // Update implements partners.PartnerServiceInterface.
-func (*PartnerService) Update(id string, input partners.PartnerCore) error {
-	panic("unimplemented")
+func (service *PartnerService) Update(id string, input partners.PartnerCore, file multipart.File) error {
+	err := service.PartnerData.Update(id, input, file)
+	return err
 }

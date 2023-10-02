@@ -111,6 +111,37 @@ func (repo *PartnerData) SelectAll() ([]partners.PartnerCore, error) {
 }
 
 // Update implements partners.PartnerDataInterface.
-func (*PartnerData) Update(id string, input partners.PartnerCore) error {
-	panic("unimplemented")
+func (repo *PartnerData) Update(id string, input partners.PartnerCore, file multipart.File) error {
+	var partnerFetch Partner
+	txFetch := repo.db.Where("id = ?", id).First(&partnerFetch)
+	if txFetch.Error != nil {
+		return txFetch.Error
+	}
+	if txFetch.RowsAffected == 0 {
+		return errNoRow
+	}
+
+	var partnerModel = PartnerCoreToModel(input)
+	var errHass error
+
+	partnerModel.Password, errHass = helpers.HassPassword(partnerModel.Password)
+	if errHass != nil {
+		return errHass
+	}
+
+	if partnerModel.ProfilePicture != helpers.DefaultFile {
+		partnerModel.ProfilePicture = id + partnerModel.ProfilePicture
+		helpers.Uploader.UploadFile(file, partnerModel.ProfilePicture)
+	} else {
+		partnerModel.ProfilePicture = partnerFetch.ProfilePicture
+	}
+
+	tx := repo.db.Model(&Partner{}).Where("id = ?", id).Updates(&partnerModel)
+	if tx.Error != nil {
+		return tx.Error
+	}
+	if tx.RowsAffected == 0 {
+		return errNoRow
+	}
+	return nil
 }

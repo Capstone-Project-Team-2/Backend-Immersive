@@ -20,7 +20,7 @@ type PartnerDataInterface interface {
 	SelectAll() ([]PartnerCore, error)
 	Select(id string) (PartnerCore, error)
 	Insert(input PartnerCore, file multipart.File) error
-	Update(id string, input PartnerCore) error
+	Update(id string, input PartnerCore, file multipart.File) error
 	Delete(id string) error
 	Login(email, password string) (string, string, error)
 }
@@ -29,7 +29,7 @@ type PartnerServiceInterface interface {
 	GetAll() ([]PartnerCore, error)
 	Get(id string) (PartnerCore, error)
 	Add(input PartnerCore, file multipart.File) error
-	Update(id string, input PartnerCore) error
+	Update(id string, input PartnerCore, file multipart.File) error
 	Delete(id string) error
 	Login(email, password string) (string, string, error)
 }
