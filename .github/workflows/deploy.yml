@@ -39,4 +39,4 @@ jobs:
             docker rm capstone-Container
             docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/capstone-images
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/capstone-images:latest
-            docker run -d -p 80:80 -e JWT_KEY=${{ secrets.JWT_KEY }} -e KEY_API=${{secrets.KEY_API}} -e KEY_API_SECRET=${{secrets.KEY_API_SECRET}} -e DBUSER=${{ secrets.DBUSER }} -e DBPASS=${{ secrets.DBPASS }} -e DBHOST=${{ secrets.DBHOST }} -e DBPORT=${{ secrets.DBPORT }} -e DBNAME=${{ secrets.DBNAME }} --name capstone-Container ${{ secrets.DOCKERHUB_USERNAME }}/capstone-images:latest
+            docker run -d -p 80:80 -e JWT_KEY=${{ secrets.JWT_KEY }} -e DBUSER=${{ secrets.DBUSER }} -e DBPASS=${{ secrets.DBPASS }} -e DBHOST=${{ secrets.DBHOST }} -e DBPORT=${{ secrets.DBPORT }} -e DBNAME=${{ secrets.DBNAME }} --name capstone-Container ${{ secrets.DOCKERHUB_USERNAME }}/capstone-images:latest
