@@ -34,23 +34,23 @@ func (h *BuyerHandler) Login(c echo.Context) error {
 		"id":    id,
 		"token": token,
 	}
-	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", data))
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "Login success", data))
 }
 
-func (h *BuyerHandler) Register(c echo.Context) error {
+func (h *BuyerHandler) Create(c echo.Context) error {
 	NewBuyer := new(BuyerRequest)
-	var linkFile string
-	file, header, errFile := c.Request().FormFile("avatar")
+	var filename string
+	file, header, errFile := c.Request().FormFile("profile_picture")
 	if errFile != nil {
 		if strings.Contains(errFile.Error(), "no such file") {
-			linkFile = helpers.DefaultFile
+			filename = helpers.DefaultFile
 		} else {
 			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+" "+errFile.Error(), nil))
 		}
 	}
 
-	if linkFile == "" {
-		linkFile = strings.ReplaceAll(header.Filename, " ", "_")
+	if filename == "" {
+		filename = strings.ReplaceAll(header.Filename, " ", "_")
 	}
 
 	err := c.Bind(&NewBuyer)
@@ -59,9 +59,9 @@ func (h *BuyerHandler) Register(c echo.Context) error {
 	}
 
 	newInput := BuyerRequestToCore(*NewBuyer)
-	newInput.Avatar = linkFile
+	newInput.ProfilePicture = filename
 
-	err = h.buyerService.Register(newInput, file)
+	err = h.buyerService.Create(newInput, file)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
 	}

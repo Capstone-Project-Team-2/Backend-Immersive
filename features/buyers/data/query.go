@@ -16,15 +16,35 @@ type buyerQuery struct {
 	db *gorm.DB
 }
 
+// Delete implements buyers.BuyerDataInterface.
+func (*buyerQuery) Delete(id string) error {
+	panic("unimplemented")
+}
+
+// Select implements buyers.BuyerDataInterface.
+func (*buyerQuery) Select(id string) (buyers.BuyerCore, error) {
+	panic("unimplemented")
+}
+
+// SelectAll implements buyers.BuyerDataInterface.
+func (*buyerQuery) SelectAll() ([]buyers.BuyerCore, error) {
+	panic("unimplemented")
+}
+
+// Update implements buyers.BuyerDataInterface.
+func (*buyerQuery) Update(input buyers.BuyerCore) error {
+	panic("unimplemented")
+}
+
 func New(database *gorm.DB) buyers.BuyerDataInterface {
 	return &buyerQuery{
 		db: database,
 	}
 }
 
-// Register implements buyers.BuyerDataInterface.
-func (r *buyerQuery) Register(input buyers.BuyerCore, file multipart.File) error {
-	NewData := CoreToModel(input)
+// Insert implements buyers.BuyerDataInterface.
+func (r *buyerQuery) Insert(input buyers.BuyerCore, file multipart.File) error {
+	NewData := BuyerCoreToModel(input)
 
 	hashPassword, err := helpers.HassPassword(input.Password)
 	if err != nil {
@@ -37,9 +57,9 @@ func (r *buyerQuery) Register(input buyers.BuyerCore, file multipart.File) error
 		return errors.New("error while generete uuid")
 	}
 
-	if NewData.Avatar != helpers.DefaultFile {
-		NewData.Avatar = NewData.ID + NewData.Avatar
-		helpers.Uploader.UploadFile(file, NewData.Avatar)
+	if NewData.ProfilePicture != helpers.DefaultFile {
+		NewData.ProfilePicture = NewData.ID + NewData.ProfilePicture
+		helpers.Uploader.UploadFile(file, NewData.ProfilePicture)
 	}
 
 	tx := r.db.Create(&NewData)
@@ -75,26 +95,6 @@ func (r *buyerQuery) Login(email string, password string) (buyers.BuyerCore, str
 		return buyers.BuyerCore{}, "", errors.New("error while creating jwt token")
 	}
 
-	data := ModelToCore(dataBuyer)
+	data := BuyerModelToCore(dataBuyer)
 	return data, token, nil
-}
-
-// Deactive implements buyers.BuyerDataInterface.
-func (*buyerQuery) Deactive(id string) error {
-	panic("unimplemented")
-}
-
-// Edit implements buyers.BuyerDataInterface.
-func (*buyerQuery) Edit(input buyers.BuyerCore) error {
-	panic("unimplemented")
-}
-
-// Profile implements buyers.BuyerDataInterface.
-func (*buyerQuery) Profile(id string) (buyers.BuyerCore, error) {
-	panic("unimplemented")
-}
-
-// ReadAll implements buyers.BuyerDataInterface.
-func (*buyerQuery) ReadAll() ([]buyers.BuyerCore, error) {
-	panic("unimplemented")
 }

@@ -14,6 +14,26 @@ type BuyerService struct {
 	validate  *validator.Validate
 }
 
+// DeleteById implements buyers.BuyerServiceInterface.
+func (*BuyerService) DeleteById(id string) error {
+	panic("unimplemented")
+}
+
+// GetAll implements buyers.BuyerServiceInterface.
+func (*BuyerService) GetAll() ([]buyers.BuyerCore, error) {
+	panic("unimplemented")
+}
+
+// GetById implements buyers.BuyerServiceInterface.
+func (*BuyerService) GetById(id string) (buyers.BuyerCore, error) {
+	panic("unimplemented")
+}
+
+// UpdateById implements buyers.BuyerServiceInterface.
+func (*BuyerService) UpdateById(id string, input buyers.BuyerCore) error {
+	panic("unimplemented")
+}
+
 func New(repo buyers.BuyerDataInterface) buyers.BuyerServiceInterface {
 	return &BuyerService{
 		buyerRepo: repo,
@@ -21,8 +41,8 @@ func New(repo buyers.BuyerDataInterface) buyers.BuyerServiceInterface {
 	}
 }
 
-// Register implements buyers.BuyerServiceInterface.
-func (s *BuyerService) Register(input buyers.BuyerCore, file multipart.File) error {
+// Create implements buyers.BuyerServiceInterface.
+func (s *BuyerService) Create(input buyers.BuyerCore, file multipart.File) error {
 	err := s.validate.Struct(input)
 	if err != nil {
 		return err
@@ -31,7 +51,7 @@ func (s *BuyerService) Register(input buyers.BuyerCore, file multipart.File) err
 	if err != nil {
 		return err
 	}
-	err = s.buyerRepo.Register(input, file)
+	err = s.buyerRepo.Insert(input, file)
 	if err != nil {
 		return err
 	}
@@ -45,24 +65,4 @@ func (s *BuyerService) Login(email string, password string) (buyers.BuyerCore, s
 	}
 	dataLogin, token, err := s.buyerRepo.Login(email, password)
 	return dataLogin, token, err
-}
-
-// Deactive implements buyers.BuyerServiceInterface.
-func (*BuyerService) Deactive(id string) error {
-	panic("unimplemented")
-}
-
-// Edit implements buyers.BuyerServiceInterface.
-func (*BuyerService) Edit(id string, input buyers.BuyerCore) error {
-	panic("unimplemented")
-}
-
-// Profile implements buyers.BuyerServiceInterface.
-func (*BuyerService) Profile(id string) (buyers.BuyerCore, error) {
-	panic("unimplemented")
-}
-
-// ReadAll implements buyers.BuyerServiceInterface.
-func (*BuyerService) ReadAll() ([]buyers.BuyerCore, error) {
-	panic("unimplemented")
 }
