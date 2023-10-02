@@ -1,9 +1,7 @@
 package service
 
 import (
-	"capstone-tickets/apps/middlewares"
 	"capstone-tickets/features/partners"
-	"capstone-tickets/helpers"
 	"mime/multipart"
 )
 
@@ -19,36 +17,26 @@ func New(repo partners.PartnerDataInterface) partners.PartnerServiceInterface {
 
 // Login implements partners.PartnerServiceInterface.
 func (service *PartnerService) Login(email string, password string) (string, string, error) {
-	id, err := service.PartnerData.Login(email, password)
-	if err != nil {
-		return "", "", err
-	}
-	var token, errToken = middlewares.CreateToken(id, "Partner")
-	if errToken != nil {
-		return "", "", err
-	}
+	id, token, err := service.PartnerData.Login(email, password)
 	return id, token, err
 }
 
 // Add implements partners.PartnerServiceInterface.
 func (service *PartnerService) Add(input partners.PartnerCore, file multipart.File) error {
-	var errHass error
-	input.Password, errHass = helpers.HassPassword(input.Password)
-	if errHass != nil {
-		return errHass
-	}
 	err := service.PartnerData.Insert(input, file)
 	return err
 }
 
 // Delete implements partners.PartnerServiceInterface.
-func (*PartnerService) Delete(id string) error {
-	panic("unimplemented")
+func (service *PartnerService) Delete(id string) error {
+	err := service.PartnerData.Delete(id)
+	return err
 }
 
 // Get implements partners.PartnerServiceInterface.
-func (*PartnerService) Get(id string) (partners.PartnerCore, error) {
-	panic("unimplemented")
+func (service *PartnerService) Get(id string) (partners.PartnerCore, error) {
+	result, err := service.PartnerData.Select(id)
+	return result, err
 }
 
 // GetAll implements partners.PartnerServiceInterface.
