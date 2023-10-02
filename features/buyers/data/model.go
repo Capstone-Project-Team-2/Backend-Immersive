@@ -14,6 +14,7 @@ type Buyer struct {
 	Email       string `gorm:"column:email;not null"`
 	Password    string `gorm:"column:password;not null"`
 	Address     string `gorm:"column:address"`
+	Avatar      string `gorm:"column:avatar"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	DeletedAt   gorm.DeletedAt `gorm:"index"`
@@ -27,6 +28,7 @@ func ModelToCore(model Buyer) buyers.BuyerCore {
 		Email:       model.Email,
 		Password:    model.Password,
 		Address:     model.Address,
+		Avatar:      model.Avatar,
 	}
 }
 
@@ -38,5 +40,6 @@ func CoreToModel(core buyers.BuyerCore) Buyer {
 		Email:       core.Email,
 		Password:    core.Password,
 		Address:     core.Address,
+		Avatar:      core.Avatar,
 	}
 }

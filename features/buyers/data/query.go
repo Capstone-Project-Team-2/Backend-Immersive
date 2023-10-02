@@ -17,22 +17,39 @@ type buyerQuery struct {
 }
 
 // Register implements buyers.BuyerDataInterface.
-func (*buyerQuery) Register(input buyers.BuyerCore, file multipart.File) error {
+func (r *buyerQuery) Register(input buyers.BuyerCore, file multipart.File) error {
 	NewData := CoreToModel(input)
+
 	hashPassword, err := helpers.HassPassword(input.Password)
 	if err != nil {
 		log.Error("error while hashing password")
 		return errors.New("error while hashing password")
 	}
-
 	NewData.Password = hashPassword
+
 	NewData.ID, err = helpers.GenerateUUID()
 	if err != nil {
 		log.Error("error while generete uuid")
 		return errors.New("error while generete uuid")
 	}
 
-	tx := r.db.Create
+	if NewData.Avatar != helpers.DefaultFile {
+		NewData.Avatar = NewData.ID + NewData.Avatar
+		helpers.Uploader.UploadFile(file, NewData.Avatar)
+	}
+
+	tx := r.db.Create(&NewData)
+	if tx.Error != nil {
+		log.Error("error insert data")
+		return errors.New("error insert data")
+	}
+
+	if tx.RowsAffected == 0 {
+		log.Warn("no user has been created")
+		return errors.New("no row affected")
+	}
+	log.Sugar().Infof("new user has been created: %s", NewData.Email)
+	return nil
 }
 
 // Login implements buyers.BuyerDataInterface.
