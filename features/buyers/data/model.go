@@ -1,6 +1,7 @@
 package data
 
 import (
+	"capstone-tickets/features/buyers"
 	"time"
 
 	"gorm.io/gorm"
@@ -15,5 +16,27 @@ type Buyer struct {
 	Address     string `gorm:"column:address"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
-	DeletedAt   gorm.DeletedAt
+	DeletedAt   gorm.DeletedAt `gorm:"index"`
+}
+
+func ModelToCore(model Buyer) buyers.BuyerCore {
+	return buyers.BuyerCore{
+		ID:          model.ID,
+		Name:        model.Name,
+		PhoneNumber: model.PhoneNumber,
+		Email:       model.Email,
+		Password:    model.Password,
+		Address:     model.Address,
+	}
+}
+
+func CoreToModel(core buyers.BuyerCore) Buyer {
+	return Buyer{
+		ID:          core.ID,
+		Name:        core.Name,
+		PhoneNumber: core.PhoneNumber,
+		Email:       core.Email,
+		Password:    core.Password,
+		Address:     core.Address,
+	}
 }

@@ -1,39 +1,43 @@
 package buyers
 
-import "github.com/labstack/echo/v4"
+import (
+	"mime/multipart"
+
+	"github.com/labstack/echo/v4"
+)
 
 type BuyerCore struct {
-	ID          uint
-	Name        string
-	PhoneNumber string
-	Email       string
-	Password    string
+	ID          string
+	Name        string `validate:"required"`
+	PhoneNumber string `validate:"required"`
+	Email       string `validate:"required,email"`
+	Password    string `validate:"required"`
 	Address     string
 }
 
 type BuyerDataInterface interface {
-	Login(email, password string) (BuyerCore, error)
-	SelectAll() ([]BuyerCore, error)
-	Select(id string) (BuyerCore, error)
-	Insert(input BuyerCore) error
-	Update(input BuyerCore) error
-	Delete(id string) error
+	Login(email, password string) (BuyerCore, string, error)
+	Register(input BuyerCore, file multipart.File) error
+	ReadAll() ([]BuyerCore, error)
+	Profile(id string) (BuyerCore, error)
+	Edit(input BuyerCore) error
+	Deactive(id string) error
 }
 
 type BuyerServiceInterface interface {
 	Login(email, password string) (BuyerCore, string, error)
-	Create(input BuyerCore) error
-	GetAll() ([]BuyerCore, error)
-	GetById(id string) (BuyerCore, error)
-	UpdateById(input BuyerCore) error
-	DeleteById(id string) error
+	Register(input BuyerCore) error
+	ReadAll() ([]BuyerCore, error)
+	Profile(id string) (BuyerCore, error)
+	Edit(id string, input BuyerCore) error
+	Deactive(id string) error
 }
 
 type BuyerHandlerInterface interface {
 	Login(c echo.Context) error
-	Create(c echo.Context) error
-	GetAll(c echo.Context) error
-	GetById(c echo.Context) error
-	UpdateById(c echo.Context) error
-	DeleteById(c echo.Context) error
+	Register(c echo.Context) error
+	ReadAll(c echo.Context) error
+	Profile(c echo.Context) error
+	Edit(c echo.Context) error
+	Deactive(c echo.Context) error
 }
