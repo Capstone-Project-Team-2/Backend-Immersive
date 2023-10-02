@@ -7,7 +7,7 @@ import (
 type BuyerCore struct {
 	ID          string
 	Name        string `validate:"required"`
-	PhoneNumber string `validate:"required"`
+	PhoneNumber string
 	Email       string `validate:"required,email"`
 	Password    string `validate:"required"`
 	Address     string
