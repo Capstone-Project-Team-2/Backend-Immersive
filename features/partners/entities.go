@@ -22,7 +22,7 @@ type PartnerDataInterface interface {
 	Insert(input PartnerCore, file multipart.File) error
 	Update(id string, input PartnerCore) error
 	Delete(id string) error
-	Login(email, password string) (string, error)
+	Login(email, password string) (string, string, error)
 }
 
 type PartnerServiceInterface interface {

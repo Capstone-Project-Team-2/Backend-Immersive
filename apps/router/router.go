@@ -23,15 +23,20 @@ func InitRouter(db *gorm.DB, c *echo.Echo) {
 	partnerService := _partnerService.New(partnerData)
 	partnerHandlerAPI := _partnerHandler.New(partnerService)
 
-	c.POST("/partners", partnerHandlerAPI.Add)
-
 	buyerData := _buyerData.New(db)
 	buyerService := _buyerService.New(buyerData)
 	buyerHandlerAPI := _buyerHandler.New(buyerService)
+
+	c.POST("/partners/login", partnerHandlerAPI.Login)
+	c.POST("/partners", partnerHandlerAPI.Add)
+	c.GET("/partners", partnerHandlerAPI.GetAll)
+	c.GET("/partners/:partner_id", partnerHandlerAPI.Get)
+	c.DELETE("/partners/:partner_id", partnerHandlerAPI.Delete)
 
 	c.POST("/buyers/login", buyerHandlerAPI.Login)
 	c.POST("/buyers", buyerHandlerAPI.Create)
 	// c.GET("/buyers", buyerHandlerAPI.GetAll)
 	// c.GET("/buyers/:buyer_id", buyerHandlerAPI.Get)
 	// c.DELETE("/buyers/:buyer_id", buyerHandlerAPI.Delete)
+
 }

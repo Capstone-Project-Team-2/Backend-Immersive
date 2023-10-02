@@ -1,2 +1,4 @@
 local.env
 *.out
+keys.json
+db_event_ticketing.sql
