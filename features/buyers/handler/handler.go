@@ -4,10 +4,11 @@ import (
 	"capstone-tickets/features/buyers"
 	"capstone-tickets/helpers"
 	"net/http"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 )
+
+var log = helpers.Log()
 
 type BuyerHandler struct {
 	buyerService buyers.BuyerServiceInterface
@@ -39,30 +40,32 @@ func (h *BuyerHandler) Login(c echo.Context) error {
 
 func (h *BuyerHandler) Create(c echo.Context) error {
 	NewBuyer := new(BuyerRequest)
-	var filename string
-	file, header, errFile := c.Request().FormFile("profile_picture")
-	if errFile != nil {
-		if strings.Contains(errFile.Error(), "no such file") {
-			filename = helpers.DefaultFile
-		} else {
-			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+" "+errFile.Error(), nil))
-		}
-	}
+	// var filename string
+	// file, header, errFile := c.Request().FormFile("profile_picture")
+	// if errFile != nil {
+	// 	if strings.Contains(errFile.Error(), "no such file") {
+	// 		filename = helpers.DefaultFile
+	// 	} else {
+	// 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+" "+errFile.Error(), nil))
+	// 	}
+	// }
 
-	if filename == "" {
-		filename = strings.ReplaceAll(header.Filename, " ", "_")
-	}
+	// if filename == "" {
+	// 	filename = strings.ReplaceAll(header.Filename, " ", "_")
+	// }
 
-	err := c.Bind(&NewBuyer)
-	if err != nil {
+	errBind := c.Bind(&NewBuyer)
+	if errBind != nil {
+		log.Error("controller - error on bind request")
 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
 	}
 
 	newInput := BuyerRequestToCore(*NewBuyer)
-	newInput.ProfilePicture = filename
+	// newInput.ProfilePicture = filename
 
-	err = h.buyerService.Create(newInput, file)
+	err := h.buyerService.Create(newInput)
 	if err != nil {
+		log.Error("internal server error, diservice")
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
 	}
 	return c.JSON(http.StatusCreated, helpers.WebResponse(http.StatusCreated, "operation success", nil))

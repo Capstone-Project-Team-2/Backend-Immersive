@@ -1,9 +1,5 @@
 package buyers
 
-import (
-	"mime/multipart"
-)
-
 type BuyerCore struct {
 	ID             string
 	Name           string `validate:"required"`
@@ -16,7 +12,7 @@ type BuyerCore struct {
 
 type BuyerDataInterface interface {
 	Login(email, password string) (BuyerCore, string, error)
-	Insert(input BuyerCore, file multipart.File) error
+	Insert(input BuyerCore) error
 	SelectAll() ([]BuyerCore, error)
 	Select(id string) (BuyerCore, error)
 	Update(input BuyerCore) error
@@ -25,7 +21,7 @@ type BuyerDataInterface interface {
 
 type BuyerServiceInterface interface {
 	Login(email, password string) (BuyerCore, string, error)
-	Create(input BuyerCore, file multipart.File) error
+	Create(input BuyerCore) error
 	GetAll() ([]BuyerCore, error)
 	GetById(id string) (BuyerCore, error)
 	UpdateById(id string, input BuyerCore) error

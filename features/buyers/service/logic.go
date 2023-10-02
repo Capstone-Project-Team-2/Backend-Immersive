@@ -4,10 +4,11 @@ import (
 	"capstone-tickets/features/buyers"
 	"capstone-tickets/helpers"
 	"errors"
-	"mime/multipart"
 
 	"github.com/go-playground/validator"
 )
+
+var log = helpers.Log()
 
 type BuyerService struct {
 	buyerRepo buyers.BuyerDataInterface
@@ -42,17 +43,24 @@ func New(repo buyers.BuyerDataInterface) buyers.BuyerServiceInterface {
 }
 
 // Create implements buyers.BuyerServiceInterface.
-func (s *BuyerService) Create(input buyers.BuyerCore, file multipart.File) error {
+func (s *BuyerService) Create(input buyers.BuyerCore) error {
 	err := s.validate.Struct(input)
 	if err != nil {
+		log.Error(err.Error())
 		return err
 	}
 	err = helpers.ValidatePassword(input.Password)
 	if err != nil {
+		log.Error(err.Error())
 		return err
 	}
-	err = s.buyerRepo.Insert(input, file)
+	if input.Name == "" {
+		log.Error("fullname is required")
+		return errors.New("name is required")
+	}
+	err = s.buyerRepo.Insert(input)
 	if err != nil {
+		log.Error(err.Error())
 		return err
 	}
 	return nil

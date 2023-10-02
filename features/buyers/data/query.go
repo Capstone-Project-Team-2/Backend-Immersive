@@ -5,7 +5,6 @@ import (
 	"capstone-tickets/features/buyers"
 	"capstone-tickets/helpers"
 	"errors"
-	"mime/multipart"
 
 	"gorm.io/gorm"
 )
@@ -43,11 +42,12 @@ func New(database *gorm.DB) buyers.BuyerDataInterface {
 }
 
 // Insert implements buyers.BuyerDataInterface.
-func (r *buyerQuery) Insert(input buyers.BuyerCore, file multipart.File) error {
+func (r *buyerQuery) Insert(input buyers.BuyerCore) error {
 	NewData := BuyerCoreToModel(input)
 
 	hashPassword, err := helpers.HassPassword(input.Password)
 	if err != nil {
+		log.Error("error while hashing password")
 		return errors.New("error while hashing password")
 	}
 	NewData.Password = hashPassword
@@ -57,19 +57,22 @@ func (r *buyerQuery) Insert(input buyers.BuyerCore, file multipart.File) error {
 		return errors.New("error while generete uuid")
 	}
 
-	if NewData.ProfilePicture != helpers.DefaultFile {
-		NewData.ProfilePicture = NewData.ID + NewData.ProfilePicture
-		helpers.Uploader.UploadFile(file, NewData.ProfilePicture)
-	}
+	// if NewData.ProfilePicture != helpers.DefaultFile {
+	// 	NewData.ProfilePicture = NewData.ID + NewData.ProfilePicture
+	// 	helpers.Uploader.UploadFile(file, NewData.ProfilePicture)
+	// }
 
 	tx := r.db.Create(&NewData)
 	if tx.Error != nil {
+		log.Error("error insert data")
 		return errors.New("error insert data")
 	}
 
 	if tx.RowsAffected == 0 {
+		log.Warn("no user has been created")
 		return errors.New("no row affected")
 	}
+	log.Sugar().Infof("new user has been created: %s", NewData.Email)
 	return nil
 }
 
