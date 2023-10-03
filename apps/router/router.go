@@ -26,4 +26,6 @@ func InitRouter(db *gorm.DB, c *echo.Echo) {
 	c.GET("/partners/:partner_id", partnerHandlerAPI.Get, middlewares.JWTMiddleware())
 	c.PUT("/partners/:partner_id", partnerHandlerAPI.Update, middlewares.JWTMiddleware())
 	c.DELETE("/partners/:partner_id", partnerHandlerAPI.Delete, middlewares.JWTMiddleware())
+
+	c.GET("/partners/test", partnerHandlerAPI.Test, middlewares.JWTMiddleware())
 }
