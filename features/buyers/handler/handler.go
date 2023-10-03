@@ -4,6 +4,7 @@ import (
 	"capstone-tickets/features/buyers"
 	"capstone-tickets/helpers"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -56,7 +57,7 @@ func (h *BuyerHandler) Create(c echo.Context) error {
 
 	errBind := c.Bind(&NewBuyer)
 	if errBind != nil {
-		log.Error("controller - error on bind request")
+		log.Error("handler - error on bind request")
 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
 	}
 
@@ -65,9 +66,39 @@ func (h *BuyerHandler) Create(c echo.Context) error {
 
 	err := h.buyerService.Create(newInput)
 	if err != nil {
-		log.Error("internal server error, diservice")
+		log.Error("handler-internal server error")
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
 	}
 	return c.JSON(http.StatusCreated, helpers.WebResponse(http.StatusCreated, "operation success", nil))
 
+}
+func (h *BuyerHandler) GetAll(c echo.Context) error {
+	result, err := h.buyerService.GetAll()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
+	}
+	var partnerResp = ListBuyerCoreToResponse(result)
+	return c.JSON(http.StatusOK, helpers.FindAllWebResponse(http.StatusOK, "operation success", partnerResp, false))
+}
+
+func (h *BuyerHandler) GetById(c echo.Context) error {
+	id := c.Param("buyer_id")
+	result, err := h.buyerService.GetById(id)
+	if err != nil {
+		if strings.Contains(err.Error(), "no row affected") {
+			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
+		}
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
+	}
+	var buyerResponse = BuyerCoreToResponse(result)
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", buyerResponse))
+}
+
+func (h *BuyerHandler) DeleteById(c echo.Context) error {
+	id := c.Param("buyer_id")
+	err := h.buyerService.DeleteById(id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
+	}
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", nil))
 }

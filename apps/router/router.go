@@ -35,8 +35,8 @@ func InitRouter(db *gorm.DB, c *echo.Echo) {
 
 	c.POST("/buyers/login", buyerHandlerAPI.Login)
 	c.POST("/buyers", buyerHandlerAPI.Create)
-	// c.GET("/buyers", buyerHandlerAPI.GetAll)
-	// c.GET("/buyers/:buyer_id", buyerHandlerAPI.Get)
-	// c.DELETE("/buyers/:buyer_id", buyerHandlerAPI.Delete)
+	c.GET("/buyers", buyerHandlerAPI.GetAll)
+	c.GET("/buyers/:buyer_id", buyerHandlerAPI.GetById)
+	c.DELETE("/buyers/:buyer_id", buyerHandlerAPI.DeleteById)
 
 }

@@ -16,23 +16,39 @@ type BuyerService struct {
 }
 
 // DeleteById implements buyers.BuyerServiceInterface.
-func (*BuyerService) DeleteById(id string) error {
-	panic("unimplemented")
+func (s *BuyerService) DeleteById(id string) error {
+	err := s.buyerRepo.Delete(id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // GetAll implements buyers.BuyerServiceInterface.
-func (*BuyerService) GetAll() ([]buyers.BuyerCore, error) {
-	panic("unimplemented")
+func (s *BuyerService) GetAll() ([]buyers.BuyerCore, error) {
+	result, err := s.buyerRepo.SelectAll()
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 // GetById implements buyers.BuyerServiceInterface.
-func (*BuyerService) GetById(id string) (buyers.BuyerCore, error) {
-	panic("unimplemented")
+func (s *BuyerService) GetById(id string) (buyers.BuyerCore, error) {
+	result, err := s.buyerRepo.Select(id)
+	if err != nil {
+		return buyers.BuyerCore{}, err
+	}
+	return result, nil
 }
 
 // UpdateById implements buyers.BuyerServiceInterface.
-func (*BuyerService) UpdateById(id string, input buyers.BuyerCore) error {
-	panic("unimplemented")
+func (s *BuyerService) UpdateById(id string, input buyers.BuyerCore) error {
+	err := s.buyerRepo.Update(input)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func New(repo buyers.BuyerDataInterface) buyers.BuyerServiceInterface {

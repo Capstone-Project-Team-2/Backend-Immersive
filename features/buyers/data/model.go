@@ -43,3 +43,20 @@ func BuyerCoreToModel(core buyers.BuyerCore) Buyer {
 		ProfilePicture: core.ProfilePicture,
 	}
 }
+
+func ListBuyerModelToCore(input []Buyer) []buyers.BuyerCore {
+	var buyerCore []buyers.BuyerCore
+	for _, value := range input {
+		var buyer = buyers.BuyerCore{
+			ID:             value.ID,
+			Name:           value.Name,
+			Email:          value.Email,
+			Password:       value.Password,
+			PhoneNumber:    value.PhoneNumber,
+			Address:        value.Address,
+			ProfilePicture: value.ProfilePicture,
+		}
+		buyerCore = append(buyerCore, buyer)
+	}
+	return buyerCore
+}
