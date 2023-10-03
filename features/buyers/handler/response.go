@@ -5,12 +5,12 @@ import (
 )
 
 type BuyerResponse struct {
-	ID             string `json:"id" form:"id"`
-	Name           string `json:"name" form:"name"`
-	Email          string `json:"email" form:"email"`
-	PhoneNumber    string `json:"phone_number" form:"phone_number"`
-	Address        string `json:"address" form:"address"`
-	ProfilePicture string `json:"profile_picture" form:"profile_picture"`
+	ID             string `json:"id"`
+	Name           string `json:"name"`
+	Email          string `json:"email"`
+	PhoneNumber    string `json:"phone_number"`
+	Address        string `json:"address"`
+	ProfilePicture string `json:"profile_picture"`
 }
 
 func BuyerCoreToResponse(input buyers.BuyerCore) BuyerResponse {

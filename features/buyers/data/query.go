@@ -5,6 +5,7 @@ import (
 	"capstone-tickets/features/buyers"
 	"capstone-tickets/helpers"
 	"errors"
+	"mime/multipart"
 
 	"gorm.io/gorm"
 )
@@ -22,7 +23,7 @@ func New(database *gorm.DB) buyers.BuyerDataInterface {
 }
 
 // Insert implements buyers.BuyerDataInterface.
-func (r *buyerQuery) Insert(input buyers.BuyerCore) error {
+func (r *buyerQuery) Insert(input buyers.BuyerCore, file multipart.File) error {
 	NewData := BuyerCoreToModel(input)
 
 	hashPassword, err := helpers.HassPassword(input.Password)
@@ -37,10 +38,10 @@ func (r *buyerQuery) Insert(input buyers.BuyerCore) error {
 		return errors.New("error while generete uuid")
 	}
 
-	// if NewData.ProfilePicture != helpers.DefaultFile {
-	// 	NewData.ProfilePicture = NewData.ID + NewData.ProfilePicture
-	// 	helpers.Uploader.UploadFile(file, NewData.ProfilePicture)
-	// }
+	if NewData.ProfilePicture != helpers.DefaultFile {
+		NewData.ProfilePicture = NewData.ID + NewData.ProfilePicture
+		helpers.Uploader.UploadFile(file, NewData.ProfilePicture)
+	}
 
 	tx := r.db.Create(&NewData)
 	if tx.Error != nil {
@@ -83,28 +84,39 @@ func (r *buyerQuery) Login(email string, password string) (buyers.BuyerCore, str
 }
 
 // Update implements buyers.BuyerDataInterface.
-func (r *buyerQuery) Update(input buyers.BuyerCore) error {
+func (r *buyerQuery) Update(id string, input buyers.BuyerCore, file multipart.File) error {
 	var buyer Buyer
-	tx := r.db.First(&buyer, input)
+	tx := r.db.Where("id = ?", id).First(&buyer)
 	if tx.Error != nil {
 		return tx.Error
 	}
 	if tx.RowsAffected == 0 {
 		return errors.New("data not found")
 	}
-	if input.Password != "" {
-		HassPassword, err := helpers.HassPassword(input.Password)
+	//Mapping Buyer to BuyerCore
+	updatedBuyer := BuyerCoreToModel(input)
+	if updatedBuyer.Password != "" {
+		HassPassword, err := helpers.HassPassword(updatedBuyer.Password)
 		if err != nil {
 			log.Error("error while hashing password")
 			return errors.New("error while hashing password")
 		}
-		input.Password = HassPassword
+		updatedBuyer.Password = HassPassword
 	}
-	//Mapping Buyer to BuyerCore
-	updatedBuyer := BuyerCoreToModel(input)
+
+	if updatedBuyer.ProfilePicture != helpers.DefaultFile {
+		updatedBuyer.ProfilePicture = id + updatedBuyer.ProfilePicture
+		helpers.Uploader.UploadFile(file, updatedBuyer.ProfilePicture)
+	} else {
+		updatedBuyer.ProfilePicture = buyer.ProfilePicture
+	}
+
 	tx = r.db.Model(&buyer).Updates(updatedBuyer)
 	if tx.Error != nil {
 		return errors.New(tx.Error.Error() + " failed to update buyer")
+	}
+	if tx.RowsAffected == 0 {
+		return errors.New("no row affected")
 	}
 	return nil
 

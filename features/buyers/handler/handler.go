@@ -3,6 +3,7 @@ package handler
 import (
 	"capstone-tickets/features/buyers"
 	"capstone-tickets/helpers"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -22,7 +23,7 @@ func New(service buyers.BuyerServiceInterface) *BuyerHandler {
 }
 
 func (h *BuyerHandler) Login(c echo.Context) error {
-	login := new(LoginRequest)
+	var login LoginRequest
 	err := c.Bind(&login)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
@@ -40,31 +41,32 @@ func (h *BuyerHandler) Login(c echo.Context) error {
 }
 
 func (h *BuyerHandler) Create(c echo.Context) error {
-	NewBuyer := new(BuyerRequest)
-	// var filename string
-	// file, header, errFile := c.Request().FormFile("profile_picture")
-	// if errFile != nil {
-	// 	if strings.Contains(errFile.Error(), "no such file") {
-	// 		filename = helpers.DefaultFile
-	// 	} else {
-	// 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+" "+errFile.Error(), nil))
-	// 	}
-	// }
+	var buyerReq BuyerRequest
+	var filename string
+	file, header, errFile := c.Request().FormFile("profile_picture")
+	if errFile != nil {
+		if strings.Contains(errFile.Error(), "no such file") {
+			filename = helpers.DefaultFile
+		} else {
+			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+" "+errFile.Error(), nil))
+		}
+	}
 
-	// if filename == "" {
-	// 	filename = strings.ReplaceAll(header.Filename, " ", "_")
-	// }
+	if filename == "" {
+		filename = strings.ReplaceAll(header.Filename, " ", "_")
+	}
 
-	errBind := c.Bind(&NewBuyer)
+	errBind := c.Bind(&buyerReq)
 	if errBind != nil {
 		log.Error("handler - error on bind request")
+		fmt.Println(errBind)
 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
 	}
 
-	newInput := BuyerRequestToCore(*NewBuyer)
-	// newInput.ProfilePicture = filename
+	newInput := BuyerRequestToCore(buyerReq)
+	newInput.ProfilePicture = filename
 
-	err := h.buyerService.Create(newInput)
+	err := h.buyerService.Create(newInput, file)
 	if err != nil {
 		log.Error("handler-internal server error")
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
@@ -92,6 +94,41 @@ func (h *BuyerHandler) GetById(c echo.Context) error {
 	}
 	var buyerResponse = BuyerCoreToResponse(result)
 	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", buyerResponse))
+}
+
+func (h *BuyerHandler) UpdateById(c echo.Context) error {
+	idParam := c.Param("buyer_id")
+	var filename string
+	file, header, errFile := c.Request().FormFile("profile_picture")
+	if errFile != nil {
+		if strings.Contains(errFile.Error(), "no such file") {
+			filename = helpers.DefaultFile
+		} else {
+			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+" "+errFile.Error(), nil))
+		}
+	}
+
+	if filename == "" {
+		filename = strings.ReplaceAll(header.Filename, " ", "_")
+	}
+
+	var buyerReq BuyerRequest
+	errBind := c.Bind(&buyerReq)
+	if errBind != nil {
+		log.Error("handler - error on bind request")
+		fmt.Println(errBind)
+		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
+	}
+
+	updatedData := BuyerRequestToCore(buyerReq)
+	updatedData.ProfilePicture = filename
+
+	err := h.buyerService.UpdateById(idParam, updatedData, file)
+	if err != nil {
+		log.Error("handler-internal server error")
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
+	}
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", nil))
 }
 
 func (h *BuyerHandler) DeleteById(c echo.Context) error {
