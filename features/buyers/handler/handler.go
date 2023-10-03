@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"capstone-tickets/apps/middlewares"
 	"capstone-tickets/features/buyers"
 	"capstone-tickets/helpers"
 	"fmt"
@@ -84,8 +85,12 @@ func (h *BuyerHandler) GetAll(c echo.Context) error {
 }
 
 func (h *BuyerHandler) GetById(c echo.Context) error {
-	id := c.Param("buyer_id")
-	result, err := h.buyerService.GetById(id)
+	id, _ := middlewares.ExtractToken(c)
+	idParam := c.Param("buyer_id")
+	if id != idParam {
+		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
+	}
+	result, err := h.buyerService.GetById(idParam)
 	if err != nil {
 		if strings.Contains(err.Error(), "no row affected") {
 			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
@@ -97,7 +102,11 @@ func (h *BuyerHandler) GetById(c echo.Context) error {
 }
 
 func (h *BuyerHandler) UpdateById(c echo.Context) error {
+	id, _ := middlewares.ExtractToken(c)
 	idParam := c.Param("buyer_id")
+	if id != idParam {
+		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
+	}
 	var filename string
 	file, header, errFile := c.Request().FormFile("profile_picture")
 	if errFile != nil {
@@ -132,8 +141,12 @@ func (h *BuyerHandler) UpdateById(c echo.Context) error {
 }
 
 func (h *BuyerHandler) DeleteById(c echo.Context) error {
-	id := c.Param("buyer_id")
-	err := h.buyerService.DeleteById(id)
+	id, _ := middlewares.ExtractToken(c)
+	idParam := c.Param("buyer_id")
+	if id != idParam {
+		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
+	}
+	err := h.buyerService.DeleteById(idParam)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
 	}
