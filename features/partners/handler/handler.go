@@ -44,7 +44,7 @@ func (handler *PartnerHandler) Login(c echo.Context) error {
 }
 
 func (handler *PartnerHandler) GetAll(c echo.Context) error {
-	_, role, _ := middlewares.ExtractToken(c)
+	_, role := middlewares.ExtractToken(c)
 	if role != "Admin" && role != "Superadmin" {
 		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
 	}
@@ -88,8 +88,8 @@ func (handler *PartnerHandler) Add(c echo.Context) error {
 }
 
 func (handler *PartnerHandler) Get(c echo.Context) error {
-	id := c.Param("partner_id")
-	result, err := handler.PartnerService.Get(id)
+	idParam := c.Param("partner_id")
+	result, err := handler.PartnerService.Get(idParam)
 	if err != nil {
 		if strings.Contains(err.Error(), "no row affected") {
 			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
@@ -101,14 +101,51 @@ func (handler *PartnerHandler) Get(c echo.Context) error {
 }
 
 func (handler *PartnerHandler) Delete(c echo.Context) error {
-	id := c.Param("partner_id")
-	err := handler.PartnerService.Delete(id)
+	id, _ := middlewares.ExtractToken(c)
+	idParam := c.Param("partner_id")
+	if id != idParam {
+		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
+	}
+	err := handler.PartnerService.Delete(idParam)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
 	}
 	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", nil))
 }
 
-// func (handler *PartnerHandler) Update(c echo.Context) error {
-// 	handler.PartnerService.Update()
-// }
+func (handler *PartnerHandler) Update(c echo.Context) error {
+	id, _ := middlewares.ExtractToken(c)
+	idParam := c.Param("partner_id")
+	if id != idParam {
+		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
+	}
+
+	var filename string
+	file, header, errFile := c.Request().FormFile("profile_picture")
+	if errFile != nil {
+		if strings.Contains(errFile.Error(), "no such file") {
+			filename = helpers.DefaultFile
+		} else {
+			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+" "+errFile.Error(), nil))
+		}
+	}
+
+	if filename == "" {
+		filename = strings.ReplaceAll(header.Filename, " ", "_")
+	}
+
+	var partnerReq PartnerRequest
+	errBind := c.Bind(&partnerReq)
+	if errBind != nil {
+		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
+	}
+
+	var partnerCore = PartnerRequestToCore(partnerReq)
+	partnerCore.ProfilePicture = filename
+
+	err := handler.PartnerService.Update(idParam, partnerCore, file)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
+	}
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", nil))
+}

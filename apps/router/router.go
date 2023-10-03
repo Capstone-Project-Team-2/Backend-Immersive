@@ -30,9 +30,10 @@ func InitRouter(db *gorm.DB, c *echo.Echo) {
 
 	c.POST("/partners/login", partnerHandlerAPI.Login)
 	c.POST("/partners", partnerHandlerAPI.Add)
-	c.GET("/partners", partnerHandlerAPI.GetAll)
-	c.GET("/partners/:partner_id", partnerHandlerAPI.Get)
-	c.DELETE("/partners/:partner_id", partnerHandlerAPI.Delete)
+	c.GET("/partners", partnerHandlerAPI.GetAll, middlewares.JWTMiddleware())
+	c.GET("/partners/:partner_id", partnerHandlerAPI.Get, middlewares.JWTMiddleware())
+	c.PUT("/partners/:partner_id", partnerHandlerAPI.Update, middlewares.JWTMiddleware())
+	c.DELETE("/partners/:partner_id", partnerHandlerAPI.Delete, middlewares.JWTMiddleware())
 
 	c.POST("/buyers/login", buyerHandlerAPI.Login)
 	c.POST("/buyers", buyerHandlerAPI.Create)

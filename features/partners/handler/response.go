@@ -2,6 +2,7 @@ package handler
 
 import (
 	"capstone-tickets/features/partners"
+	"capstone-tickets/helpers"
 	"time"
 )
 
@@ -23,7 +24,7 @@ func PartnerCoreToResponse(input partners.PartnerCore) PartnerResponse {
 		Email:          input.Email,
 		PhoneNumber:    input.PhoneNumber,
 		Address:        input.Address,
-		ProfilePicture: input.ProfilePicture,
+		ProfilePicture: helpers.FileFetch + input.ProfilePicture,
 	}
 	return partnerResp
 }
@@ -38,7 +39,7 @@ func ListPartnerCoreToResponse(input []partners.PartnerCore) []PartnerResponse {
 			Email:          value.Email,
 			PhoneNumber:    value.PhoneNumber,
 			Address:        value.Address,
-			ProfilePicture: value.ProfilePicture,
+			ProfilePicture: helpers.FileFetch + value.ProfilePicture,
 		}
 		partnerResp = append(partnerResp, partner)
 	}

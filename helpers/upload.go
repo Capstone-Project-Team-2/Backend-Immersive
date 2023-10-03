@@ -16,7 +16,7 @@ const (
 	projectID   = "vertical-shore-397515"       // FILL IN WITH YOURS
 	bucketName  = "capstone_tickets_app_bucket" // FILL IN WITH YOURS
 	DefaultFile = "default.png"
-	FileFetch   = "https://storage.cloud.google.com/capstone_tickets_app_bucket/profile_picture/"
+	FileFetch   = "https://storage.googleapis.com/capstone_tickets_app_bucket/profile_picture/"
 )
 
 type ClientUploader struct {
@@ -29,7 +29,7 @@ type ClientUploader struct {
 var Uploader *ClientUploader
 
 func init() {
-	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "keys.json") // FILL IN WITH YOUR FILE PATH
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "./keys.json") // FILL IN WITH YOUR FILE PATH
 	client, err := storage.NewClient(context.Background())
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
@@ -39,7 +39,7 @@ func init() {
 		cl:         client,
 		bucketName: bucketName,
 		projectID:  projectID,
-		uploadPath: "profile-picture/",
+		uploadPath: "profile_picture/",
 	}
 }
 
