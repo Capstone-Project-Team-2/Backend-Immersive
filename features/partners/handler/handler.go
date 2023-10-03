@@ -149,3 +149,12 @@ func (handler *PartnerHandler) Update(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", nil))
 }
+
+func (hendler *PartnerHandler) Test(c echo.Context) error {
+	id, role := middlewares.ExtractToken(c)
+	data := map[string]any{
+		"id":   id,
+		"role": role,
+	}
+	return c.JSON(http.StatusOK, data)
+}
