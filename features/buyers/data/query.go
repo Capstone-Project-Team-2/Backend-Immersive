@@ -58,29 +58,28 @@ func (r *buyerQuery) Insert(input buyers.BuyerCore, file multipart.File) error {
 }
 
 // Login implements buyers.BuyerDataInterface.
-func (r *buyerQuery) Login(email string, password string) (buyers.BuyerCore, string, error) {
+func (r *buyerQuery) Login(email string, password string) (string, string, error) {
 	var dataBuyer Buyer
 	tx := r.db.Where("email=?", email).First(&dataBuyer)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
-		return buyers.BuyerCore{}, "", errors.New("invalid email and password")
+		return "", "", errors.New("invalid email and password")
 	}
 
 	if tx.RowsAffected == 0 {
-		return buyers.BuyerCore{}, "", errors.New("no row affected")
+		return "", "", errors.New("no row affected")
 	}
 
 	checkPassword := helpers.CheckPassword(password, dataBuyer.Password)
 	if !checkPassword {
-		return buyers.BuyerCore{}, "", errors.New("password does not match")
+		return "", "", errors.New("password does not match")
 	}
 
 	token, err := middlewares.CreateToken(dataBuyer.ID, "Buyer")
 	if err != nil {
-		return buyers.BuyerCore{}, "", errors.New("error while creating jwt token")
+		return "", "", errors.New("error while creating jwt token")
 	}
 
-	data := BuyerModelToCore(dataBuyer)
-	return data, token, nil
+	return dataBuyer.ID, token, nil
 }
 
 // Update implements buyers.BuyerDataInterface.
