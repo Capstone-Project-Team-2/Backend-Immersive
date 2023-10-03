@@ -42,4 +42,5 @@ func InitRouter(db *gorm.DB, c *echo.Echo) {
 	c.DELETE("/buyers/:buyer_id", buyerHandlerAPI.DeleteById, middlewares.JWTMiddleware())
 	c.PUT("/buyers/:buyer_id", buyerHandlerAPI.UpdateById, middlewares.JWTMiddleware())
 
+	c.GET("/partners/test", partnerHandlerAPI.Test, middlewares.JWTMiddleware())
 }
