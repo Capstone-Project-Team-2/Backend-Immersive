@@ -27,14 +27,14 @@ func CreateToken(userId string, userRole string) (string, error) {
 	return token.SignedString([]byte(config.JWT_SECRRET))
 }
 
-func ExtractToken(e echo.Context) (string, string, string) {
+func ExtractToken(e echo.Context) (string, string) {
 	user := e.Get("user").(*jwt.Token)
 	if user.Valid {
 		claims := user.Claims.(jwt.MapClaims)
-		userId := claims["id"].(string)
-		role := claims["role"].(string)
-		email := claims["emails"].(string)
-		return userId, role, email
+		userId := claims["userId"].(string)
+		role := claims["userRole"].(string)
+		// email := claims["emails"].(string)
+		return userId, role
 	}
-	return "", "", ""
+	return "", ""
 }
