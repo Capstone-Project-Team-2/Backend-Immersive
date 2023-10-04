@@ -7,3 +7,11 @@ type AdminCore struct {
 	Password string
 	Role     string
 }
+
+type AdminDataInterface interface {
+	Register(AdminCore) error
+}
+
+type AdminServiceInterface interface {
+	Register(AdminCore) error
+}
