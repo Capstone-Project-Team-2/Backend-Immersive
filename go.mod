@@ -18,6 +18,7 @@ require (
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
+	github.com/midtrans/midtrans-go v1.3.7 // indirect
 	github.com/monoculum/formam/v3 v3.6.0 // indirect
 )
 

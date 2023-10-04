@@ -21,6 +21,10 @@ import (
 	_volunteerData "capstone-tickets/features/volunteers/data"
 	_volunteerHandler "capstone-tickets/features/volunteers/handler"
 	_volunteerService "capstone-tickets/features/volunteers/service"
+
+	_transactionData "capstone-tickets/features/transactions/data"
+	_transactionHandler "capstone-tickets/features/transactions/handler"
+	_transactionService "capstone-tickets/features/transactions/service"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -43,6 +47,10 @@ func InitRouter(db *gorm.DB, c *echo.Echo) {
 	volunteerData := _volunteerData.New(db)
 	volunteerService := _volunteerService.New(volunteerData)
 	volunteerHandlerAPI := _volunteerHandler.New(volunteerService)
+
+	transactionData := _transactionData.New(db)
+	transactionService := _transactionService.New(transactionData)
+	transactionHandlerAPI := _transactionHandler.New(transactionService)
 
 	c.POST("/partners/login", partnerHandlerAPI.Login)
 	c.POST("/partners", partnerHandlerAPI.Add)
@@ -69,6 +77,9 @@ func InitRouter(db *gorm.DB, c *echo.Echo) {
 	c.GET("/volunteers/:volunteer_id", volunteerHandlerAPI.GetById, middlewares.JWTMiddleware())
 	c.DELETE("/volunteers/:volunteer_id", volunteerHandlerAPI.DeleteById, middlewares.JWTMiddleware())
 	c.PUT("/volunteers/:volunteer_id", volunteerHandlerAPI.UpdateById, middlewares.JWTMiddleware())
+
+	c.POST("/transactions", transactionHandlerAPI.Create)
+	c.GET("/transactions", transactionHandlerAPI.GetById)
 
 	c.GET("/partners/test", partnerHandlerAPI.Test, middlewares.JWTMiddleware())
 
