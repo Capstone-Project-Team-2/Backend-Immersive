@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"capstone-tickets/apps/middlewares"
 	"capstone-tickets/features/volunteers"
 	"capstone-tickets/helpers"
 	"fmt"
@@ -41,6 +42,10 @@ func (h *VolunteerHandler) Login(c echo.Context) error {
 }
 
 func (h *VolunteerHandler) Create(c echo.Context) error {
+	_, role := middlewares.ExtractToken(c)
+	if role != "Partner" {
+		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
+	}
 	var volunteerReq VolunteerRequest
 
 	errBind := c.Bind(&volunteerReq)
@@ -61,10 +66,10 @@ func (h *VolunteerHandler) Create(c echo.Context) error {
 
 }
 func (h *VolunteerHandler) GetAll(c echo.Context) error {
-	//_, role := middlewares.ExtractToken(c)
-	//if role != "Admin" {
-	//return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
-	//}
+	_, role := middlewares.ExtractToken(c)
+	if role != "Partner" {
+		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
+	}
 	result, err := h.volunteerService.GetAll()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
@@ -74,11 +79,11 @@ func (h *VolunteerHandler) GetAll(c echo.Context) error {
 }
 
 func (h *VolunteerHandler) GetById(c echo.Context) error {
-	//id, _ := middlewares.ExtractToken(c)
+	id, role := middlewares.ExtractToken(c)
 	idParam := c.Param("volunteer_id")
-	//if id != idParam {
-	//	return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
-	//}
+	if id != idParam && role != "Partner" {
+		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
+	}
 	result, err := h.volunteerService.GetById(idParam)
 	if err != nil {
 		if strings.Contains(err.Error(), "no row affected") {
@@ -91,12 +96,11 @@ func (h *VolunteerHandler) GetById(c echo.Context) error {
 }
 
 func (h *VolunteerHandler) UpdateById(c echo.Context) error {
-	//id, _ := middlewares.ExtractToken(c)
+	_, role := middlewares.ExtractToken(c)
+	if role != "Partner" {
+		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
+	}
 	idParam := c.Param("volunteer_id")
-	//if id != idParam {
-	//	return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
-	//}
-
 	var volunteerReq VolunteerRequest
 	errBind := c.Bind(&volunteerReq)
 	if errBind != nil {
@@ -116,11 +120,11 @@ func (h *VolunteerHandler) UpdateById(c echo.Context) error {
 }
 
 func (h *VolunteerHandler) DeleteById(c echo.Context) error {
-	//id, _ := middlewares.ExtractToken(c)
+	_, role := middlewares.ExtractToken(c)
+	if role != "Partner" {
+		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
+	}
 	idParam := c.Param("volunteer_id")
-	//if id != idParam {
-	//	return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
-	//}
 	err := h.volunteerService.DeleteById(idParam)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))

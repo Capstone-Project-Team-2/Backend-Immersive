@@ -72,9 +72,7 @@ func (r *volunteerQuery) Login(email string, password string) (string, string, e
 	if err != nil {
 		return "", "", errors.New("error while creating jwt token")
 	}
-
-	data := VolunteerModelToCore(dataVolunteer)
-	return data.ID, token, nil
+	return dataVolunteer.ID, token, nil
 }
 
 // Select implements volunteers.VolunteerDataInterface.
