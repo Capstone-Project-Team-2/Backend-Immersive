@@ -21,6 +21,7 @@ func New(service transactions.TransactionServiceInterface) *TransactionHandler {
 		transactionService: service,
 	}
 }
+
 func (h *TransactionHandler) Create(c echo.Context) error {
 	var transactionReq TransactionRequest
 
