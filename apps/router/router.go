@@ -2,6 +2,9 @@ package router
 
 import (
 	"capstone-tickets/apps/middlewares"
+	_adminData "capstone-tickets/features/admins/data"
+	_adminHandler "capstone-tickets/features/admins/handler"
+	_adminService "capstone-tickets/features/admins/service"
 	_partnerData "capstone-tickets/features/partners/data"
 	_partnerHandler "capstone-tickets/features/partners/handler"
 	_partnerService "capstone-tickets/features/partners/service"
@@ -43,6 +46,11 @@ func InitRouter(db *gorm.DB, c *echo.Echo) {
 	c.PUT("/partners/:partner_id", partnerHandlerAPI.Update, middlewares.JWTMiddleware())
 	c.DELETE("/partners/:partner_id", partnerHandlerAPI.Delete, middlewares.JWTMiddleware())
 
+	adminData := _adminData.New(db)
+	adminService := _adminService.New(adminData)
+	adminHandlerAPI := _adminHandler.New(adminService)
+
+	c.POST("/admins", adminHandlerAPI.Register)
 	c.POST("/buyers/login", buyerHandlerAPI.Login)
 	c.POST("/buyers", buyerHandlerAPI.Create)
 	c.GET("/buyers", buyerHandlerAPI.GetAll, middlewares.JWTMiddleware())
