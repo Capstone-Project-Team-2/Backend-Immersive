@@ -13,10 +13,15 @@ import (
 )
 
 const (
-	projectID   = "vertical-shore-397515"       // FILL IN WITH YOURS
-	bucketName  = "capstone_tickets_app_bucket" // FILL IN WITH YOURS
-	DefaultFile = "default.png"
-	FileFetch   = "https://storage.googleapis.com/capstone_tickets_app_bucket/profile_picture/"
+	projectID       = "vertical-shore-397515"       // FILL IN WITH YOURS
+	bucketName      = "capstone_tickets_app_bucket" // FILL IN WITH YOURS
+	DefaultFile     = "default.png"
+	FileFetchBuyer  = "https://storage.googleapis.com/capstone_tickets_app_bucket/profile_picture/buyer/"
+	FileFetchParner = "https://storage.googleapis.com/capstone_tickets_app_bucket/profile_picture/partner/"
+	FileFetchEvent  = "https://storage.googleapis.com/capstone_tickets_app_bucket/profile_picture/event_banner/"
+	BuyerPath       = "profile_picture/buyer/"
+	PartnerPath     = "profile_picture/partner/"
+	EventPath       = "event_banner/"
 )
 
 type ClientUploader struct {
@@ -39,18 +44,18 @@ func init() {
 		cl:         client,
 		bucketName: bucketName,
 		projectID:  projectID,
-		uploadPath: "profile_picture/",
+		// uploadPath: "profile_picture/",
 	}
 }
 
-func (c *ClientUploader) UploadFile(file multipart.File, object string) error {
+func (c *ClientUploader) UploadFile(file multipart.File, object string, path string) error {
 	ctx := context.Background()
 
 	ctx, cancel := context.WithTimeout(ctx, time.Second*50)
 	defer cancel()
 
 	// Upload an object with storage.Writer.
-	wc := c.cl.Bucket(c.bucketName).Object(c.uploadPath + object).NewWriter(ctx)
+	wc := c.cl.Bucket(c.bucketName).Object(path + object).NewWriter(ctx)
 	fmt.Println(wc)
 	if _, err := io.Copy(wc, file); err != nil {
 		return fmt.Errorf("io.Copy: %v", err)

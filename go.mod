@@ -13,7 +13,10 @@ require (
 	gorm.io/gorm v1.25.4
 )
 
-require github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
+require (
+	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
+	github.com/monoculum/formam/v3 v3.6.0 // indirect
+)
 
 require (
 	cloud.google.com/go v0.110.4 // indirect
