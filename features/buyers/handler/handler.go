@@ -59,7 +59,7 @@ func (h *BuyerHandler) Create(c echo.Context) error {
 
 	errBind := c.Bind(&buyerReq)
 	if errBind != nil {
-		log.Error("handler - error on bind request")
+		// log.Error("handler - error on bind request")
 		fmt.Println(errBind)
 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
 	}
@@ -69,7 +69,7 @@ func (h *BuyerHandler) Create(c echo.Context) error {
 
 	err := h.buyerService.Create(newInput, file)
 	if err != nil {
-		log.Error("handler-internal server error")
+		// log.Error("handler-internal server error")
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
 	}
 	return c.JSON(http.StatusCreated, helpers.WebResponse(http.StatusCreated, "operation success", nil))
@@ -128,7 +128,7 @@ func (h *BuyerHandler) UpdateById(c echo.Context) error {
 	var buyerReq BuyerRequest
 	errBind := c.Bind(&buyerReq)
 	if errBind != nil {
-		log.Error("handler - error on bind request")
+		// log.Error("handler - error on bind request")
 		fmt.Println(errBind)
 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
 	}
@@ -138,7 +138,7 @@ func (h *BuyerHandler) UpdateById(c echo.Context) error {
 
 	err := h.buyerService.UpdateById(idParam, updatedData, file)
 	if err != nil {
-		log.Error("handler-internal server error")
+		// log.Error("handler-internal server error")
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
 	}
 	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", nil))

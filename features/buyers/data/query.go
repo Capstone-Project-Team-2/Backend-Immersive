@@ -28,7 +28,7 @@ func (r *buyerQuery) Insert(input buyers.BuyerCore, file multipart.File) error {
 
 	hashPassword, err := helpers.HassPassword(input.Password)
 	if err != nil {
-		log.Error("error while hashing password")
+		// log.Error("error while hashing password")
 		return errors.New("error while hashing password")
 	}
 	NewData.Password = hashPassword
@@ -40,20 +40,20 @@ func (r *buyerQuery) Insert(input buyers.BuyerCore, file multipart.File) error {
 
 	if NewData.ProfilePicture != helpers.DefaultFile {
 		NewData.ProfilePicture = NewData.ID + NewData.ProfilePicture
-		helpers.Uploader.UploadFile(file, NewData.ProfilePicture)
+		helpers.Uploader.UploadFile(file, NewData.ProfilePicture, helpers.BuyerPath)
 	}
 
 	tx := r.db.Create(&NewData)
 	if tx.Error != nil {
-		log.Error("error insert data")
+		// log.Error("error insert data")
 		return errors.New("error insert data")
 	}
 
 	if tx.RowsAffected == 0 {
-		log.Warn("no buyer has been created")
+		// log.Warn("no buyer has been created")
 		return errors.New("no row affected")
 	}
-	log.Sugar().Infof("new buyer has been created: %s", NewData.Email)
+	// log.Sugar().Infof("new buyer has been created: %s", NewData.Email)
 	return nil
 }
 
@@ -97,7 +97,7 @@ func (r *buyerQuery) Update(id string, input buyers.BuyerCore, file multipart.Fi
 	if updatedBuyer.Password != "" {
 		HassPassword, err := helpers.HassPassword(updatedBuyer.Password)
 		if err != nil {
-			log.Error("error while hashing password")
+			// log.Error("error while hashing password")
 			return errors.New("error while hashing password")
 		}
 		updatedBuyer.Password = HassPassword
@@ -105,7 +105,7 @@ func (r *buyerQuery) Update(id string, input buyers.BuyerCore, file multipart.Fi
 
 	if updatedBuyer.ProfilePicture != helpers.DefaultFile {
 		updatedBuyer.ProfilePicture = id + updatedBuyer.ProfilePicture
-		helpers.Uploader.UploadFile(file, updatedBuyer.ProfilePicture)
+		helpers.Uploader.UploadFile(file, updatedBuyer.ProfilePicture, helpers.BuyerPath)
 	} else {
 		updatedBuyer.ProfilePicture = buyer.ProfilePicture
 	}

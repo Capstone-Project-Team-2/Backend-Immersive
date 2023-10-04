@@ -63,13 +63,13 @@ func New(repo buyers.BuyerDataInterface) buyers.BuyerServiceInterface {
 func (s *BuyerService) Create(input buyers.BuyerCore, file multipart.File) error {
 	err := s.validate.Struct(input)
 	if err != nil {
-		log.Error(err.Error())
+		// log.Error(err.Error())
 		return err
 	}
 
 	err = s.buyerRepo.Insert(input, file)
 	if err != nil {
-		log.Error(err.Error())
+		// log.Error(err.Error())
 		return err
 	}
 	return nil

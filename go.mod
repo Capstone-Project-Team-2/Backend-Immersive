@@ -10,7 +10,7 @@ require (
 	github.com/labstack/echo-jwt v0.0.0-20221127215225-c84d41a71003
 	github.com/labstack/echo/v4 v4.11.1
 	github.com/spf13/viper v1.16.0
-	go.uber.org/zap v1.21.0
+	go.uber.org/zap v1.26.0
 	golang.org/x/crypto v0.11.0
 	gorm.io/driver/mysql v1.5.1
 	gorm.io/gorm v1.25.4
@@ -18,7 +18,11 @@ require (
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
+<<<<<<< HEAD
 	github.com/midtrans/midtrans-go v1.3.7 // indirect
+=======
+	github.com/monoculum/formam/v3 v3.6.0 // indirect
+>>>>>>> 314d16ffdfa5e2914d084b81d1df76288965d46d
 )
 
 require (
@@ -57,7 +61,7 @@ require (
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
-	go.uber.org/multierr v1.8.0 // indirect
+	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/oauth2 v0.10.0 // indirect
 	golang.org/x/sys v0.10.0 // indirect

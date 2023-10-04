@@ -71,7 +71,7 @@ func (repo *PartnerData) Insert(input partners.PartnerCore, file multipart.File)
 
 	if partnerModel.ProfilePicture != helpers.DefaultFile {
 		partnerModel.ProfilePicture = partnerModel.ID + partnerModel.ProfilePicture
-		helpers.Uploader.UploadFile(file, partnerModel.ProfilePicture)
+		helpers.Uploader.UploadFile(file, partnerModel.ProfilePicture, helpers.PartnerPath)
 	}
 
 	tx := repo.db.Create(&partnerModel)
@@ -131,7 +131,7 @@ func (repo *PartnerData) Update(id string, input partners.PartnerCore, file mult
 
 	if partnerModel.ProfilePicture != helpers.DefaultFile {
 		partnerModel.ProfilePicture = id + partnerModel.ProfilePicture
-		helpers.Uploader.UploadFile(file, partnerModel.ProfilePicture)
+		helpers.Uploader.UploadFile(file, partnerModel.ProfilePicture, helpers.PartnerPath)
 	} else {
 		partnerModel.ProfilePicture = partnerFetch.ProfilePicture
 	}
