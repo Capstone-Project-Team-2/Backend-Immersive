@@ -39,12 +39,12 @@ func (s *VolunteerService) Create(input volunteers.VolunteerCore) error {
 }
 
 // Login implements volunteers.VolunteerServiceInterface.
-func (s *VolunteerService) Login(email string, password string) (volunteers.VolunteerCore, string, error) {
+func (s *VolunteerService) Login(email string, password string) (string, string, error) {
 	if email == "" || password == "" {
-		return volunteers.VolunteerCore{}, "", errors.New("Email and Password cannot be empty")
+		return "", "", errors.New("Email and Password cannot be empty")
 	}
-	dataLogin, token, err := s.volunteerRepo.Login(email, password)
-	return dataLogin, token, err
+	id, token, err := s.volunteerRepo.Login(email, password)
+	return id, token, err
 }
 
 // DeleteById implements volunteers.VolunteerServiceInterface.

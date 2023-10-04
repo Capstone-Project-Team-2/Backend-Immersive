@@ -9,7 +9,7 @@ type VolunteerCore struct {
 }
 
 type VolunteerDataInterface interface {
-	Login(email, password string) (VolunteerCore, string, error)
+	Login(email, password string) (string, string, error)
 	Insert(input VolunteerCore) error
 	SelectAll() ([]VolunteerCore, error)
 	Select(id string) (VolunteerCore, error)
@@ -18,7 +18,7 @@ type VolunteerDataInterface interface {
 }
 
 type VolunteerServiceInterface interface {
-	Login(email, password string) (VolunteerCore, string, error)
+	Login(email, password string) (string, string, error)
 	Create(input VolunteerCore) error
 	GetAll() ([]VolunteerCore, error)
 	GetById(id string) (VolunteerCore, error)

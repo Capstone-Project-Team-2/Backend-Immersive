@@ -52,29 +52,29 @@ func (r *volunteerQuery) Insert(input volunteers.VolunteerCore) error {
 }
 
 // Login implements volunteers.VolunteerDataInterface.
-func (r *volunteerQuery) Login(email string, password string) (volunteers.VolunteerCore, string, error) {
+func (r *volunteerQuery) Login(email string, password string) (string, string, error) {
 	var dataVolunteer Volunteer
 	tx := r.db.Where("email=?", email).First(&dataVolunteer)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
-		return volunteers.VolunteerCore{}, "", errors.New("invalid email and password")
+		return "", "", errors.New("invalid email and password")
 	}
 
 	if tx.RowsAffected == 0 {
-		return volunteers.VolunteerCore{}, "", errors.New("no row affected")
+		return "", "", errors.New("no row affected")
 	}
 
 	checkPassword := helpers.CheckPassword(password, dataVolunteer.Password)
 	if !checkPassword {
-		return volunteers.VolunteerCore{}, "", errors.New("password does not match")
+		return "", "", errors.New("password does not match")
 	}
 
 	token, err := middlewares.CreateToken(dataVolunteer.ID, "Volunteer")
 	if err != nil {
-		return volunteers.VolunteerCore{}, "", errors.New("error while creating jwt token")
+		return "", "", errors.New("error while creating jwt token")
 	}
 
 	data := VolunteerModelToCore(dataVolunteer)
-	return data, token, nil
+	return data.ID, token, nil
 }
 
 // Select implements volunteers.VolunteerDataInterface.
