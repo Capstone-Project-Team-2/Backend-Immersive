@@ -44,7 +44,7 @@ func (handler *PartnerHandler) Login(c echo.Context) error {
 }
 
 func (handler *PartnerHandler) GetAll(c echo.Context) error {
-	_, role, _ := middlewares.ExtractToken(c)
+	_, role := middlewares.ExtractToken(c)
 	if role != "Admin" && role != "Superadmin" {
 		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
 	}
@@ -101,7 +101,7 @@ func (handler *PartnerHandler) Get(c echo.Context) error {
 }
 
 func (handler *PartnerHandler) Delete(c echo.Context) error {
-	id, _, _ := middlewares.ExtractToken(c)
+	id, _ := middlewares.ExtractToken(c)
 	idParam := c.Param("partner_id")
 	if id != idParam {
 		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
@@ -114,7 +114,7 @@ func (handler *PartnerHandler) Delete(c echo.Context) error {
 }
 
 func (handler *PartnerHandler) Update(c echo.Context) error {
-	id, _, _ := middlewares.ExtractToken(c)
+	id, _ := middlewares.ExtractToken(c)
 	idParam := c.Param("partner_id")
 	if id != idParam {
 		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
@@ -148,4 +148,13 @@ func (handler *PartnerHandler) Update(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
 	}
 	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", nil))
+}
+
+func (hendler *PartnerHandler) Test(c echo.Context) error {
+	id, role := middlewares.ExtractToken(c)
+	data := map[string]any{
+		"id":   id,
+		"role": role,
+	}
+	return c.JSON(http.StatusOK, data)
 }
