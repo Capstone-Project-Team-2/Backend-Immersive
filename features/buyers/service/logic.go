@@ -76,10 +76,10 @@ func (s *BuyerService) Create(input buyers.BuyerCore, file multipart.File) error
 }
 
 // Login implements buyers.BuyerServiceInterface.
-func (s *BuyerService) Login(email string, password string) (buyers.BuyerCore, string, error) {
+func (s *BuyerService) Login(email string, password string) (string, string, error) {
 	if email == "" || password == "" {
-		return buyers.BuyerCore{}, "", errors.New("Email and Password cannot be empty")
+		return "", "", errors.New("Email and Password cannot be empty")
 	}
-	dataLogin, token, err := s.buyerRepo.Login(email, password)
-	return dataLogin, token, err
+	id, token, err := s.buyerRepo.Login(email, password)
+	return id, token, err
 }

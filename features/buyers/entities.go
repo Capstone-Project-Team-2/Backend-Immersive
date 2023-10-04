@@ -13,7 +13,7 @@ type BuyerCore struct {
 }
 
 type BuyerDataInterface interface {
-	Login(email, password string) (BuyerCore, string, error)
+	Login(email, password string) (string, string, error)
 	Insert(input BuyerCore, file multipart.File) error
 	SelectAll() ([]BuyerCore, error)
 	Select(id string) (BuyerCore, error)
@@ -22,7 +22,7 @@ type BuyerDataInterface interface {
 }
 
 type BuyerServiceInterface interface {
-	Login(email, password string) (BuyerCore, string, error)
+	Login(email, password string) (string, string, error)
 	Create(input BuyerCore, file multipart.File) error
 	GetAll() ([]BuyerCore, error)
 	GetById(id string) (BuyerCore, error)
