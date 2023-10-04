@@ -28,7 +28,7 @@ type ClientUploader struct {
 	cl         *storage.Client
 	projectID  string
 	bucketName string
-	uploadPath string
+	// uploadPath string
 }
 
 var Uploader *ClientUploader
