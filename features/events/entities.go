@@ -1,6 +1,10 @@
 package events
 
-import "time"
+import (
+	"capstone-tickets/features/partners"
+	"mime/multipart"
+	"time"
+)
 
 type EventCore struct {
 	ID               string
@@ -13,4 +17,31 @@ type EventCore struct {
 	EndDate          time.Time
 	ValidationStatus string
 	ExecutionStatus  string
+	BannerPicture    string
+	Partner          partners.PartnerCore
+	Ticket           []TicketCore
+}
+
+type TicketCore struct {
+	ID        string
+	EventID   string
+	NameClass string
+	Total     uint
+	Price     uint
+}
+
+type EventDataInterface interface {
+	Insert(input EventCore, file multipart.File) error
+	Select(id string) (EventCore, error)
+	SelectAll(userId, role, validation, execution string) ([]EventCore, error)
+	Update(id string, input EventCore) error
+	Delete(id string) error
+}
+
+type EventServiceInterface interface {
+	Add(input EventCore, file multipart.File) error
+	Get(id string) (EventCore, error)
+	GetAll(userId, role, validation, execution string) ([]EventCore, error)
+	Update(id string, input EventCore) error
+	Delete(id string) error
 }

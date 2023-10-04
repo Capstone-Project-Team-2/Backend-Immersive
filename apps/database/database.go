@@ -30,6 +30,6 @@ func InitMysql(cfg *config.AppConfig) *gorm.DB {
 
 func InitMigration(db *gorm.DB) {
 	db.AutoMigrate(&adminModel.Admin{}, &buyerModel.Buyer{}, &partnerModel.Partner{},
-		&eventModel.Event{}, &volunteerModel.Volunteer{}, &ticketModel.Ticket{},
+		&eventModel.Event{}, &volunteerModel.Volunteer{}, &eventModel.Ticket{},
 		&transactionModel.Transaction{}, &ticketModel.TicketDetail{}, &refundModel.Refund{})
 }

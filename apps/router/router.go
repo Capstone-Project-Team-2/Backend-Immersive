@@ -2,9 +2,14 @@ package router
 
 import (
 	"capstone-tickets/apps/middlewares"
+	_eventData "capstone-tickets/features/events/data"
+	_eventHandler "capstone-tickets/features/events/handler"
+	_eventService "capstone-tickets/features/events/service"
+
 	_adminData "capstone-tickets/features/admins/data"
 	_adminHandler "capstone-tickets/features/admins/handler"
 	_adminService "capstone-tickets/features/admins/service"
+
 	_partnerData "capstone-tickets/features/partners/data"
 	_partnerHandler "capstone-tickets/features/partners/handler"
 	_partnerService "capstone-tickets/features/partners/service"
@@ -66,4 +71,12 @@ func InitRouter(db *gorm.DB, c *echo.Echo) {
 	c.PUT("/volunteers/:volunteer_id", volunteerHandlerAPI.UpdateById, middlewares.JWTMiddleware())
 
 	c.GET("/partners/test", partnerHandlerAPI.Test, middlewares.JWTMiddleware())
+
+	eventData := _eventData.New(db)
+	eventService := _eventService.New(eventData)
+	eventHandlerAPI := _eventHandler.New(eventService)
+
+	c.POST("/events", eventHandlerAPI.Add, middlewares.JWTMiddleware())
+	c.POST("/events/test", eventHandlerAPI.Test, middlewares.JWTMiddleware())
+
 }

@@ -24,7 +24,7 @@ func PartnerCoreToResponse(input partners.PartnerCore) PartnerResponse {
 		Email:          input.Email,
 		PhoneNumber:    input.PhoneNumber,
 		Address:        input.Address,
-		ProfilePicture: helpers.FileFetch + input.ProfilePicture,
+		ProfilePicture: helpers.FileFetchParner + input.ProfilePicture,
 	}
 	return partnerResp
 }
@@ -39,7 +39,7 @@ func ListPartnerCoreToResponse(input []partners.PartnerCore) []PartnerResponse {
 			Email:          value.Email,
 			PhoneNumber:    value.PhoneNumber,
 			Address:        value.Address,
-			ProfilePicture: helpers.FileFetch + value.ProfilePicture,
+			ProfilePicture: helpers.FileFetchParner + value.ProfilePicture,
 		}
 		partnerResp = append(partnerResp, partner)
 	}
