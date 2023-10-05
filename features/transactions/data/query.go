@@ -7,9 +7,10 @@ import (
 	"capstone-tickets/helpers"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 
-	"github.com/midtrans/midtrans-go"
 	"gorm.io/gorm"
 )
 
@@ -26,7 +27,7 @@ func New(database *gorm.DB) transactions.TransactionDataInterface {
 }
 
 // Insert implements transactions.TransactionDataInterface.
-func (r *transactionQuery) Insert(data transactions.TransactionCore) (transactions.TransactionCore, error) {
+func (r *transactionQuery) Insert(data transactions.TransactionCore) error {
 
 	//1. memulai transaksi
 
@@ -48,7 +49,7 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore) (transactio
 		tx1 := r.db.Where("id =?", key).First(&ticket)
 		paymentTotal = paymentTotal + (float64(ticket.Price) * float64(v))
 		if ticket.Total < uint(v) {
-			return transactions.TransactionCore{}, errors.New("tiket tidak mencukupi" + tx1.Error.Error())
+			return errors.New("tiket tidak mencukupi" + tx1.Error.Error())
 		}
 	}
 
@@ -56,7 +57,7 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore) (transactio
 	var event _eventData.Event
 	tx2 := r.db.Where("id = ? AND end_date < NOW()", transactionModel.EventID).First(&event)
 	if tx2.RowsAffected == 0 {
-		return transactions.TransactionCore{}, errors.New("Waktu event sudah berakhir")
+		return errors.New("Waktu event sudah berakhir")
 	}
 
 	//4. hitung total pembayaran
@@ -67,17 +68,12 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore) (transactio
 	var err error
 	transactionModel.ID, err = helpers.GenerateUUID()
 	if err != nil {
-		return transactions.TransactionCore{}, err
+		tx.Rollback()
+		return err
 	}
-	transactionModel.PaymentTotal = paymentTotal
+	transactionModel.PaymentTotal = paymentTotal + 5000
 
 	//6. simpan ke database
-	tx.Create(&transactionModel)
-	if tx.Error != nil {
-		tx.Rollback()
-		return transactions.TransactionCore{}, tx.Error
-	}
-
 	var bank = BankTransfer{
 		Bank: "bca",
 	}
@@ -93,50 +89,55 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore) (transactio
 
 	jsonData, errMars := json.Marshal(midtrans)
 	if errMars != nil {
-		return transactions.TransactionCore{}, errMars
+		tx.Rollback()
+		return errMars
 	}
 
 	//7. kirim ke midtrans
-	response, errResp := http.Post("https://api.sandbox.midtrans.com/v2/charge", "application/json", bytes.NewBuffer(jsonData))
+	request, errReq := http.NewRequest("POST", "https://api.sandbox.midtrans.com/v2/charge", bytes.NewBuffer(jsonData))
+	if errReq != nil {
+		tx.Rollback()
+		return errReq
+	}
+
+	request.Header.Add("Authorization", "Basic U0ItTWlkLXNlcnZlci1PM1p5QWt2bmgteHByQ0czS0p1OG1OM2w=")
+	request.Header.Add("Content-Type", "application/json")
+
+	client := &http.Client{}
+
+	response, errResp := client.Do(request)
 	if errResp != nil {
-		return transactions.TransactionCore{}, errResp
-	}
-	/*
-		_, err = SendTransactionToMidtrans(transactionData)
-		if err != nil {
-			tx.Rollback()
-			return transactions.TransactionCore{}, err
-		}
-	*/
-	tx.Commit()
-	dataResp := TransactionModelToCore(transactionData)
-	return dataResp, nil
-}
-
-// SendTransactionToMidtrans sends transaction data to Midtrans
-func SendTransactionToMidtrans(transaction Transaction.TransactionCore, paymentMethod string) (*midtrans.TransactionResponse, error) {
-	coreGateway := midtrans.CoreGateway{
-		ClientKey: midtrans.ClientKey,
-		ServerKey: midtrans.ServerKey,
-		Env:       midtrans.Sandbox, // or midtrans.Production for production environment
+		tx.Rollback()
+		return errResp
 	}
 
-	chargeReq := &midtrans.ChargeReq{
-		PaymentType: midtrans.PaymentType(paymentMethod),
-		TransactionDetails: midtrans.TransactionDetails{
-			OrderID:  transaction.OrderID,
-			GrossAmt: int64(transaction.PaymentTotal),
-		},
-		// ... konfigurasi lainnya sesuai dengan jenis pembayaran yang Anda gunakan
-	}
-
-	// Kirim data transaksi ke Midtrans
-	chargeResp, err := coreGateway.ChargeTransaction(chargeReq)
+	body, errRead := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, err
+		tx.Rollback()
+		return errRead
+	}
+	fmt.Println(string(body))
+
+	var midtransresp MidtransResponse
+
+	json.Unmarshal(body, &midtransresp)
+
+	var errParse error
+	transactionModel.VirtualAccount = midtransresp.VirtualAccount[0].VANumber
+	transactionModel.TimeLimit, errParse = helpers.ParseTime(midtransresp.ExpiredTime)
+	if errParse != nil {
+		tx.Rollback()
+		return errParse
 	}
 
-	return chargeResp, nil
+	tx.Create(&transactionModel)
+	if tx.Error != nil {
+		tx.Rollback()
+		return tx.Error
+	}
+	tx.Commit()
+	// dataResp := TransactionModelToCore(transactionData)
+	return nil
 }
 
 // Select implements transactions.TransactionDataInterface.

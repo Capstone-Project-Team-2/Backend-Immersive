@@ -3,16 +3,17 @@ package transactions
 import "time"
 
 type TransactionCore struct {
-	ID            string
-	OrderID       string
-	BuyerID       string
-	EventID       string
-	PaymentStatus string
-	PaymentMethod string
-	TimeLimit     time.Time
-	TicketCount   uint
-	PaymentTotal  float64
-	TicketDetail  []TicketDetailCore
+	ID             string
+	OrderID        string
+	BuyerID        string
+	EventID        string
+	PaymentStatus  string
+	PaymentMethod  string
+	VirtualAccount string
+	TimeLimit      time.Time
+	TicketCount    uint
+	PaymentTotal   float64
+	TicketDetail   []TicketDetailCore
 }
 
 type TicketDetailCore struct {
@@ -25,12 +26,12 @@ type TicketDetailCore struct {
 }
 
 type TransactionDataInterface interface {
-	Insert(data TransactionCore) (TransactionCore, error)
+	Insert(data TransactionCore) error
 	Select(id string) (TransactionCore, error)
 	Update(id string, updatedData TransactionCore) error
 }
 type TransactionServiceInterface interface {
-	Create(data TransactionCore) (TransactionCore, error)
+	Create(data TransactionCore) error
 	Get(id string) (TransactionCore, error)
 	Update(id string, updatedData TransactionCore) error
 }

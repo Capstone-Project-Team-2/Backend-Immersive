@@ -15,12 +15,12 @@ func New(repo transactions.TransactionDataInterface) transactions.TransactionSer
 }
 
 // Create implements transactions.TransactionServiceInterface.
-func (s *TransactionService) Create(data transactions.TransactionCore) (transactions.TransactionCore, error) {
-	result, err := s.transactionRepo.Insert(data)
+func (s *TransactionService) Create(data transactions.TransactionCore) error {
+	err := s.transactionRepo.Insert(data)
 	if err != nil {
-		return transactions.TransactionCore{}, err
+		return err
 	}
-	return result, nil
+	return nil
 }
 
 // Get implements transactions.TransactionServiceInterface.
