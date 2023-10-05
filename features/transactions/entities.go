@@ -22,16 +22,16 @@ type TicketDetailCore struct {
 	EventID       string
 	TicketID      string
 	TransactionID string
-	UseStatus     bool
+	UseStatus     string
 }
 
 type TransactionDataInterface interface {
-	Insert(data TransactionCore) error
+	Insert(data TransactionCore, buyer_id string) error
 	Select(id string) (TransactionCore, error)
 	Update(id string, updatedData TransactionCore) error
 }
 type TransactionServiceInterface interface {
-	Create(data TransactionCore) error
+	Create(data TransactionCore, buyer_id string) error
 	Get(id string) (TransactionCore, error)
 	Update(id string, updatedData TransactionCore) error
 }

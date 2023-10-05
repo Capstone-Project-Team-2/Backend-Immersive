@@ -18,7 +18,7 @@ type BankTransfer struct {
 type MidtransResponse struct {
 	StatusCode     string           `json:"status_code"`
 	TransactionID  string           `json:"transaction_id"`
-	VirtualAccount []VirtualAccount `json:"va_number"`
+	VirtualAccount []VirtualAccount `json:"va_numbers"`
 	ExpiredTime    string           `json:"expiry_time"`
 }
 

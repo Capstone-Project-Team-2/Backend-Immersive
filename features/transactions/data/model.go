@@ -27,12 +27,15 @@ type Transaction struct {
 }
 
 type TicketDetail struct {
-	ID            string
+	ID            string `gorm:"type:varchar(191);primaryKey"`
 	BuyerID       string
 	EventID       string
 	TicketID      string
 	TransactionID string
-	UseStatus     bool
+	UseStatus     string `gorm:"column:use_status;type:enum('Pending','Used');default:Pending"`
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	DeletedAt     gorm.DeletedAt
 }
 
 func TransactionModelToCore(transaction Transaction) transactions.TransactionCore {
@@ -62,5 +65,22 @@ func TransactionCoreToModel(core transactions.TransactionCore) Transaction {
 		TimeLimit:      core.TimeLimit,
 		TicketCount:    core.TicketCount,
 		PaymentTotal:   core.PaymentTotal,
+		TicketDetail:   TicketDetailCoreToModel(core.TicketDetail),
 	}
+}
+
+func TicketDetailCoreToModel(input []transactions.TicketDetailCore) []TicketDetail {
+	var ticketDetailModel []TicketDetail
+	for _, v := range input {
+		var ticket = TicketDetail{
+			ID:            v.ID,
+			BuyerID:       v.BuyerID,
+			EventID:       v.EventID,
+			TicketID:      v.TicketID,
+			TransactionID: v.TransactionID,
+			UseStatus:     v.UseStatus,
+		}
+		ticketDetailModel = append(ticketDetailModel, ticket)
+	}
+	return ticketDetailModel
 }

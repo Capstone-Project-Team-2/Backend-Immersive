@@ -7,7 +7,6 @@ import (
 	eventModel "capstone-tickets/features/events/data"
 	partnerModel "capstone-tickets/features/partners/data"
 	refundModel "capstone-tickets/features/refund/data"
-	ticketModel "capstone-tickets/features/tickets/data"
 	transactionModel "capstone-tickets/features/transactions/data"
 	volunteerModel "capstone-tickets/features/volunteers/data"
 
@@ -31,5 +30,5 @@ func InitMysql(cfg *config.AppConfig) *gorm.DB {
 func InitMigration(db *gorm.DB) {
 	db.AutoMigrate(&adminModel.Admin{}, &buyerModel.Buyer{}, &partnerModel.Partner{},
 		&eventModel.Event{}, &volunteerModel.Volunteer{}, &eventModel.Ticket{},
-		&transactionModel.Transaction{}, &ticketModel.TicketDetail{}, &refundModel.Refund{})
+		&transactionModel.Transaction{}, &transactionModel.TicketDetail{}, &refundModel.Refund{})
 }

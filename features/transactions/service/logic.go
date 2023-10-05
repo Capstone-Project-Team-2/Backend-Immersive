@@ -15,8 +15,8 @@ func New(repo transactions.TransactionDataInterface) transactions.TransactionSer
 }
 
 // Create implements transactions.TransactionServiceInterface.
-func (s *TransactionService) Create(data transactions.TransactionCore) error {
-	err := s.transactionRepo.Insert(data)
+func (s *TransactionService) Create(data transactions.TransactionCore, buyer_id string) error {
+	err := s.transactionRepo.Insert(data, buyer_id)
 	if err != nil {
 		return err
 	}

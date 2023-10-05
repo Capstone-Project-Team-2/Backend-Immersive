@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"capstone-tickets/apps/middlewares"
 	"capstone-tickets/features/transactions"
 	"capstone-tickets/helpers"
 	"fmt"
@@ -23,6 +24,7 @@ func New(service transactions.TransactionServiceInterface) *TransactionHandler {
 }
 
 func (h *TransactionHandler) Create(c echo.Context) error {
+	buyer_id, _ := middlewares.ExtractToken(c)
 	var transactionReq TransactionRequest
 
 	errBind := c.Bind(&transactionReq)
@@ -34,13 +36,13 @@ func (h *TransactionHandler) Create(c echo.Context) error {
 
 	newInput := TransactionRequestToCore(transactionReq)
 
-	result, err := h.transactionService.Create(newInput)
+	err := h.transactionService.Create(newInput, buyer_id)
 	if err != nil {
 		log.Error("handler-internal server error")
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
 	}
-	resultResp := TransactionCoreToResponse(result)
-	return c.JSON(http.StatusCreated, helpers.WebResponse(http.StatusCreated, "operation success", resultResp))
+
+	return c.JSON(http.StatusCreated, helpers.WebResponse(http.StatusCreated, "operation success", nil))
 
 }
 
