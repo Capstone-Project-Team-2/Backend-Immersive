@@ -1,10 +1,13 @@
 package data
 
 import (
-	"capstone-tickets/features/tickets"
+	"bytes"
+	_eventData "capstone-tickets/features/events/data"
 	"capstone-tickets/features/transactions"
 	"capstone-tickets/helpers"
+	"encoding/json"
 	"errors"
+	"net/http"
 
 	"github.com/midtrans/midtrans-go"
 	"gorm.io/gorm"
@@ -24,48 +27,77 @@ func New(database *gorm.DB) transactions.TransactionDataInterface {
 
 // Insert implements transactions.TransactionDataInterface.
 func (r *transactionQuery) Insert(data transactions.TransactionCore) (transactions.TransactionCore, error) {
+
 	//1. memulai transaksi
-	tx := r.db.Begin()
 
 	//2. pengecekan stok tiket
-	var availableTickets uint
-	tx.Model(&Tickets{}).
-		Where("event_id=? AND total >= ?", tickets.TicketCore.EventID, tickets.TicketCore.Total).Count(&availableTickets)
-	if availableTickets < data.TicketCount {
-		tx.Rollback()
-		return transactions.TransactionCore{}, errors.New("stok tiket tidak cukup")
+	var transactionModel = TransactionCoreToModel(data)
+	var count map[string]int
+	var paymentTotal float64
+	for _, v := range transactionModel.TicketDetail {
+		_, exist := count[v.TicketID]
+		if !exist {
+			count[v.TicketID] = 1
+		} else {
+			count[v.TicketID] += 1
+		}
+	}
+
+	for key, v := range count {
+		var ticket _eventData.Ticket
+		tx1 := r.db.Where("id =?", key).First(&ticket)
+		paymentTotal = paymentTotal + (float64(ticket.Price) * float64(v))
+		if ticket.Total < uint(v) {
+			return transactions.TransactionCore{}, errors.New("tiket tidak mencukupi" + tx1.Error.Error())
+		}
 	}
 
 	//3.pengecekan waktu event
-	var event tickets.TicketCore
-	tx.Where("id = ? AND end_date < NOW()", tickets.TicketCore.EventID)
-	if event.ID == "" {
-		tx.Rollback()
+	var event _eventData.Event
+	tx2 := r.db.Where("id = ? AND end_date < NOW()", transactionModel.EventID).First(&event)
+	if tx2.RowsAffected == 0 {
 		return transactions.TransactionCore{}, errors.New("Waktu event sudah berakhir")
 	}
 
 	//4. hitung total pembayaran
-	ticketPrice := tickets.TicketCore.Price
-	//gimana cara membaca perjenis ticketnya
-	paymentTotal := float64(data.TicketCount) * ticketPrice
+	// sudah dihandle diatas
 
 	//5. Membuat transaksi
-	transactionData := TransactionCoreToModel(data)
+	tx := r.db.Begin()
 	var err error
-	transactionData.ID, err = helpers.GenerateUUID()
+	transactionModel.ID, err = helpers.GenerateUUID()
 	if err != nil {
 		return transactions.TransactionCore{}, err
 	}
-	transactionData.PaymentTotal = paymentTotal
+	transactionModel.PaymentTotal = paymentTotal
 
 	//6. simpan ke database
-	tx = r.db.Create(&transactionData)
+	tx.Create(&transactionModel)
 	if tx.Error != nil {
 		tx.Rollback()
 		return transactions.TransactionCore{}, tx.Error
 	}
 
+	var bank = BankTransfer{
+		Bank: "bca",
+	}
+	var trans = TransactionDetail{
+		OrderID:     transactionModel.ID,
+		GrossAmount: paymentTotal,
+	}
+	var midtrans = DataMidtrans{
+		PaymentType:       "bank_transfer",
+		TransactionDetail: trans,
+		BankTransfer:      bank,
+	}
+
+	jsonData, errMars := json.Marshal(midtrans)
+	if errMars != nil {
+		return transactions.TransactionCore{}, errMars
+	}
+
 	//7. kirim ke midtrans
+	http.Post("https://api.sandbox.midtrans.com/v2/charge", "application/json", bytes.NewBuffer(jsonData))
 	_, err = SendTransactionToMidtrans(transactionData)
 	if err != nil {
 		tx.Rollback()

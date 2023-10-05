@@ -19,9 +19,19 @@ type Transaction struct {
 	TicketCount   uint             `gorm:"column:ticket_count"`
 	PaymentTotal  float64          `gorm:"column:payment_total"`
 	Buyer         buyerModel.Buyer `gorm:"foreignKey:BuyerID"`
+	TicketDetail  []TicketDetail   `gorm:"foreignKey:TransactionID"`
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 	DeletedAt     gorm.DeletedAt
+}
+
+type TicketDetail struct {
+	ID            string
+	BuyerID       string
+	EventID       string
+	TicketID      string
+	TransactionID string
+	UseStatus     bool
 }
 
 func TransactionModelToCore(transaction Transaction) transactions.TransactionCore {

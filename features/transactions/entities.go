@@ -12,7 +12,18 @@ type TransactionCore struct {
 	TimeLimit     time.Time
 	TicketCount   uint
 	PaymentTotal  float64
+	TicketDetail  []TicketDetailCore
 }
+
+type TicketDetailCore struct {
+	ID            string
+	BuyerID       string
+	EventID       string
+	TicketID      string
+	TransactionID string
+	UseStatus     bool
+}
+
 type TransactionDataInterface interface {
 	Insert(data TransactionCore) (TransactionCore, error)
 	Select(id string) (TransactionCore, error)
