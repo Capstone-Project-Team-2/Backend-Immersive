@@ -97,13 +97,17 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore) (transactio
 	}
 
 	//7. kirim ke midtrans
-	http.Post("https://api.sandbox.midtrans.com/v2/charge", "application/json", bytes.NewBuffer(jsonData))
-	_, err = SendTransactionToMidtrans(transactionData)
-	if err != nil {
-		tx.Rollback()
-		return transactions.TransactionCore{}, err
+	response, errResp := http.Post("https://api.sandbox.midtrans.com/v2/charge", "application/json", bytes.NewBuffer(jsonData))
+	if errResp != nil {
+		return transactions.TransactionCore{}, errResp
 	}
-
+	/*
+		_, err = SendTransactionToMidtrans(transactionData)
+		if err != nil {
+			tx.Rollback()
+			return transactions.TransactionCore{}, err
+		}
+	*/
 	tx.Commit()
 	dataResp := TransactionModelToCore(transactionData)
 	return dataResp, nil
