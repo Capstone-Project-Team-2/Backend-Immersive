@@ -91,9 +91,9 @@ func (r *volunteerQuery) Select(id string) (volunteers.VolunteerCore, error) {
 }
 
 // SelectAll implements volunteers.VolunteerDataInterface.
-func (r *volunteerQuery) SelectAll() ([]volunteers.VolunteerCore, error) {
+func (r *volunteerQuery) SelectAll(id string) ([]volunteers.VolunteerCore, error) {
 	var volunteer []Volunteer
-	tx := r.db.Find(&volunteer)
+	tx := r.db.Where("event_id = ?", id).Find(&volunteer)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

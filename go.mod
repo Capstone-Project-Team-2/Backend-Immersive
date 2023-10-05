@@ -5,10 +5,10 @@ go 1.20
 require (
 	cloud.google.com/go/storage v1.33.0
 	github.com/go-playground/validator v9.31.0+incompatible
-	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/google/uuid v1.3.1
-	github.com/labstack/echo-jwt v0.0.0-20221127215225-c84d41a71003
 	github.com/labstack/echo/v4 v4.11.1
+	github.com/monoculum/formam/v3 v3.6.0
 	github.com/spf13/viper v1.16.0
 	go.uber.org/zap v1.26.0
 	golang.org/x/crypto v0.11.0
@@ -17,9 +17,8 @@ require (
 )
 
 require (
-	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
-	github.com/midtrans/midtrans-go v1.3.7 // indirect
-	github.com/monoculum/formam/v3 v3.6.0 // indirect
+	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
+	github.com/monoculum/formam v3.5.5+incompatible // indirect
 )
 
 require (
@@ -31,7 +30,6 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
-	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
@@ -57,7 +55,6 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/oauth2 v0.10.0 // indirect
