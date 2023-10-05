@@ -57,8 +57,8 @@ func (s *VolunteerService) DeleteById(id string) error {
 }
 
 // GetAll implements volunteers.VolunteerServiceInterface.
-func (s *VolunteerService) GetAll(id string) ([]volunteers.VolunteerCore, error) {
-	result, err := s.volunteerRepo.SelectAll(id)
+func (s *VolunteerService) GetAll(eventId string) ([]volunteers.VolunteerCore, error) {
+	result, err := s.volunteerRepo.SelectAll(eventId)
 	if err != nil {
 		return nil, err
 	}
