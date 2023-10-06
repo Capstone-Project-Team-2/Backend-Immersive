@@ -17,8 +17,8 @@ require (
 )
 
 require (
+	github.com/go-playground/form v3.1.4+incompatible // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
-	github.com/midtrans/midtrans-go v1.3.7 // indirect
 	github.com/monoculum/formam v3.5.5+incompatible // indirect
 )
 
@@ -28,6 +28,7 @@ require (
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
+	github.com/go-playground/form/v4 v4.2.1
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect

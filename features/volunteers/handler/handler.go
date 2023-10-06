@@ -70,7 +70,8 @@ func (h *VolunteerHandler) GetAll(c echo.Context) error {
 	if role != "Partner" {
 		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
 	}
-	result, err := h.volunteerService.GetAll()
+	idParam := c.Param("event_id")
+	result, err := h.volunteerService.GetAll(idParam)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
 	}

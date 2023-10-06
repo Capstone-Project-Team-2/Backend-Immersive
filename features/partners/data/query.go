@@ -123,10 +123,11 @@ func (repo *PartnerData) Update(id string, input partners.PartnerCore, file mult
 
 	var partnerModel = PartnerCoreToModel(input)
 	var errHass error
-
-	partnerModel.Password, errHass = helpers.HassPassword(partnerModel.Password)
-	if errHass != nil {
-		return errHass
+	if partnerModel.Password != "" {
+		partnerModel.Password, errHass = helpers.HassPassword(partnerModel.Password)
+		if errHass != nil {
+			return errHass
+		}
 	}
 
 	if partnerModel.ProfilePicture != helpers.DefaultFile {
