@@ -76,7 +76,13 @@ func (s *VolunteerService) GetById(id string) (volunteers.VolunteerCore, error) 
 
 // UpdateById implements volunteers.VolunteerServiceInterface.
 func (s *VolunteerService) UpdateById(id string, input volunteers.VolunteerCore) error {
-	err := s.volunteerRepo.Update(id, input)
+	err := s.validate.Struct(input)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	err = s.volunteerRepo.Update(id, input)
 	if err != nil {
 		return err
 	}
