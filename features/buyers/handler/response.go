@@ -2,6 +2,7 @@ package handler
 
 import (
 	"capstone-tickets/features/buyers"
+	"capstone-tickets/helpers"
 )
 
 type BuyerResponse struct {
@@ -20,7 +21,7 @@ func BuyerCoreToResponse(input buyers.BuyerCore) BuyerResponse {
 		Email:          input.Email,
 		PhoneNumber:    input.PhoneNumber,
 		Address:        input.Address,
-		ProfilePicture: input.ProfilePicture,
+		ProfilePicture: helpers.FileFetchBuyer + input.ProfilePicture,
 	}
 	return buyerResp
 }
@@ -34,7 +35,7 @@ func ListBuyerCoreToResponse(input []buyers.BuyerCore) []BuyerResponse {
 			Email:          value.Email,
 			PhoneNumber:    value.PhoneNumber,
 			Address:        value.Address,
-			ProfilePicture: value.ProfilePicture,
+			ProfilePicture: helpers.FileFetchBuyer + value.ProfilePicture,
 		}
 		buyerResp = append(buyerResp, buyer)
 	}
