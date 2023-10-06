@@ -2,6 +2,7 @@ package handler
 
 import (
 	"capstone-tickets/features/events"
+	"capstone-tickets/helpers"
 	"time"
 )
 
@@ -19,6 +20,8 @@ type TicketRequest struct {
 	NameClass string `json:"name_class" form:"name_class" formam:"name_class"`
 	Total     uint   `json:"total" form:"total" formam:"total"`
 	Price     uint   `json:"price" form:"price" formam:"price"`
+	SellStart string `formam:"sell_start" json:"sell_start" form:"sell_start"`
+	SellEnd   string `formam:"sell_end" json:"sell_end" form:"sell_end"`
 }
 
 func ParseTime(val string) time.Time {
@@ -47,6 +50,8 @@ func ListTicketRequestToCore(input []TicketRequest) []events.TicketCore {
 			NameClass: value.NameClass,
 			Total:     value.Total,
 			Price:     value.Price,
+			SellStart: helpers.ParseTime(value.SellStart),
+			SellEnd:   helpers.ParseTime(value.SellEnd),
 		}
 		ticketsCore = append(ticketsCore, ticket)
 	}
