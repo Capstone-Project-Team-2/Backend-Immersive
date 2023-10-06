@@ -4,6 +4,7 @@ import (
 	"capstone-tickets/features/events"
 	"capstone-tickets/helpers"
 	"errors"
+	"fmt"
 	"mime/multipart"
 
 	"gorm.io/gorm"
@@ -35,8 +36,8 @@ func (repo *EventQuery) Insert(input events.EventCore, file multipart.File) erro
 		return errGen
 	}
 
-	for _, v := range eventModel.Ticket {
-		v.ID, errGen = helpers.GenerateUUID()
+	for i := 0; i < len(eventModel.Ticket); i++ {
+		eventModel.Ticket[i].ID, errGen = helpers.GenerateUUID()
 		if errGen != nil {
 			return errGen
 		}
@@ -46,7 +47,7 @@ func (repo *EventQuery) Insert(input events.EventCore, file multipart.File) erro
 		eventModel.BannerPicture = eventModel.ID + eventModel.BannerPicture
 		helpers.Uploader.UploadFile(file, eventModel.BannerPicture, helpers.EventPath)
 	}
-
+	fmt.Println("query event model: ", eventModel)
 	tx := repo.db.Create(&eventModel)
 	if tx.Error != nil {
 		return tx.Error

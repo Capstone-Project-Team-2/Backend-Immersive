@@ -28,6 +28,8 @@ type TicketCore struct {
 	NameClass string
 	Total     uint
 	Price     uint
+	SellStart time.Time
+	SellEnd   time.Time
 }
 
 type EventDataInterface interface {
