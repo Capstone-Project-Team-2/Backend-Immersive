@@ -68,10 +68,10 @@ func (handler *EventHandler) Add(c echo.Context) error {
 }
 
 func (handler *EventHandler) GetAll(c echo.Context) error {
-	userId, role := middlewares.ExtractToken(c)
-	validation := c.Param("validation")
-	execution := c.Param("execution")
-	result, err := handler.eventService.GetAll(userId, role, validation, execution)
+	// userId, role := middlewares.ExtractToken(c)
+	// validation := c.Param("validation")
+	// execution := c.Param("execution")
+	result, err := handler.eventService.GetAll()
 	if err != nil {
 		if strings.Contains(err.Error(), "no row affected") {
 			return c.JSON(http.StatusNotFound, helpers.WebResponse(http.StatusNotFound, helpers.Error404, nil))
@@ -79,6 +79,16 @@ func (handler *EventHandler) GetAll(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
 	}
 	var eventResp = ListEventCoreToResponse(result)
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", eventResp))
+}
+
+func (handler *EventHandler) Get(c echo.Context) error {
+	event_id := c.Param("event_id")
+	result, err := handler.eventService.Get(event_id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
+	}
+	var eventResp = EventCoreToResponse(result)
 	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", eventResp))
 }
 

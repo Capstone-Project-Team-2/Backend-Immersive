@@ -27,13 +27,14 @@ func (*EventService) Delete(id string) error {
 }
 
 // Get implements events.EventServiceInterface.
-func (*EventService) Get(id string) (events.EventCore, error) {
-	panic("unimplemented")
+func (service *EventService) Get(id string) (events.EventCore, error) {
+	result, err := service.eventData.Select(id)
+	return result, err
 }
 
 // GetAll implements events.EventServiceInterface.
-func (service *EventService) GetAll(userId, role, validation, execution string) ([]events.EventCore, error) {
-	result, err := service.eventData.SelectAll(userId, role, validation, execution)
+func (service *EventService) GetAll() ([]events.EventCore, error) {
+	result, err := service.eventData.SelectAll()
 	return result, err
 }
 

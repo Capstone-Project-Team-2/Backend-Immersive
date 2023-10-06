@@ -93,6 +93,7 @@ func ListEventModelToCore(input []Event) []events.EventCore {
 			ExecutionStatus:  value.ExecutionStatus,
 			BannerPicture:    value.BannerPicture,
 			Partner:          partnerModel.PartnerModelToCore(value.Partner),
+			Ticket:           ListTicketModelToCore(value.Ticket),
 		}
 		eventCore = append(eventCore, event)
 	}
