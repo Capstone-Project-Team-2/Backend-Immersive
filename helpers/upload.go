@@ -18,7 +18,7 @@ const (
 	DefaultFile     = "default.png"
 	FileFetchBuyer  = "https://storage.googleapis.com/capstone_tickets_app_bucket/profile_picture/buyer/"
 	FileFetchParner = "https://storage.googleapis.com/capstone_tickets_app_bucket/profile_picture/partner/"
-	FileFetchEvent  = "https://storage.googleapis.com/capstone_tickets_app_bucket/profile_picture/event_banner/"
+	FileFetchEvent  = "https://storage.googleapis.com/capstone_tickets_app_bucket/event_banner/"
 	BuyerPath       = "profile_picture/buyer/"
 	PartnerPath     = "profile_picture/partner/"
 	EventPath       = "event_banner/"
