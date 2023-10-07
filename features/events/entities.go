@@ -35,7 +35,7 @@ type TicketCore struct {
 type EventDataInterface interface {
 	Insert(input EventCore, file multipart.File) error
 	Select(id string) (EventCore, error)
-	SelectAll(userId, role, validation, execution string) ([]EventCore, error)
+	SelectAll() ([]EventCore, error)
 	Update(id string, input EventCore) error
 	Delete(id string) error
 }
@@ -43,7 +43,7 @@ type EventDataInterface interface {
 type EventServiceInterface interface {
 	Add(input EventCore, file multipart.File) error
 	Get(id string) (EventCore, error)
-	GetAll(userId, role, validation, execution string) ([]EventCore, error)
+	GetAll() ([]EventCore, error)
 	Update(id string, input EventCore) error
 	Delete(id string) error
 }
