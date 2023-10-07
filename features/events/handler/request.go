@@ -3,7 +3,6 @@ package handler
 import (
 	"capstone-tickets/features/events"
 	"capstone-tickets/helpers"
-	"time"
 )
 
 type EventRequest struct {
@@ -24,20 +23,14 @@ type TicketRequest struct {
 	SellEnd   string `formam:"sell_end" json:"sell_end" form:"sell_end"`
 }
 
-func ParseTime(val string) time.Time {
-	layout := "2006-01-02 15:04:05"
-	date, _ := time.Parse(layout, val)
-	return date
-}
-
 func EventRequestToCore(input EventRequest) events.EventCore {
 	var eventCore = events.EventCore{
 		Name:          input.Name,
 		Location:      input.Location,
 		Description:   input.Description,
 		TermCondition: input.TermCondition,
-		StartDate:     ParseTime(input.StartDate),
-		EndDate:       ParseTime(input.EndDate),
+		StartDate:     helpers.ParseTime(input.StartDate),
+		EndDate:       helpers.ParseTime(input.EndDate),
 		Ticket:        ListTicketRequestToCore(input.Ticket),
 	}
 	return eventCore
