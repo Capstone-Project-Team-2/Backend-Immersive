@@ -39,6 +39,7 @@ func (service *EventService) GetAll() ([]events.EventCore, error) {
 }
 
 // Update implements events.EventServiceInterface.
-func (*EventService) Update(id string, input events.EventCore) error {
-	panic("unimplemented")
+func (service *EventService) Update(event_id, partner_id string, input events.EventCore, file multipart.File) error {
+	err := service.eventData.Update(event_id, partner_id, input, file)
+	return err
 }

@@ -92,6 +92,49 @@ func (handler *EventHandler) Get(c echo.Context) error {
 	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", eventResp))
 }
 
+func (handler *EventHandler) Update(c echo.Context) error {
+	idParam := c.Param("event_id")
+	parter_id, role := middlewares.ExtractToken(c)
+	if role != "Partner" {
+		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401+" operation can be done by a partner", nil))
+	}
+
+	var filename string
+	file, header, errFile := c.Request().FormFile("banner_picture")
+	if errFile != nil {
+		if strings.Contains(errFile.Error(), "no such file") {
+			fmt.Println(helpers.DefaultFile)
+			filename = helpers.DefaultFile
+		} else {
+			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+" errFile "+errFile.Error(), nil))
+		}
+	}
+
+	var eventReq EventRequest
+	dec := form.NewDecoder()
+	values, errForm := c.FormParams()
+	if errForm != nil {
+		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+" errForm "+errForm.Error(), nil))
+	}
+
+	errDec := dec.Decode(&eventReq, values)
+	if errDec != nil {
+		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+" errDec "+errDec.Error(), nil))
+	}
+
+	if filename == "" {
+		filename = strings.ReplaceAll(header.Filename, " ", "_")
+	}
+
+	var eventCore = EventRequestToCore(eventReq)
+	eventCore.BannerPicture = filename
+	err := handler.eventService.Update(idParam, parter_id, eventCore, file)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500+" "+err.Error(), nil))
+	}
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", nil))
+}
+
 func (handler *EventHandler) Test(c echo.Context) error {
 	var eventReq EventRequest
 	form, errForm := c.FormParams()
