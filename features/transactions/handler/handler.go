@@ -71,6 +71,11 @@ func (h *TransactionHandler) Update(c echo.Context) error {
 	var midtransCore = MidtransCallbackReqestToCore(midtrans)
 	err := h.transactionService.Update(midtransCore)
 	if err != nil {
+		if strings.Contains(err.Error(), "signature") {
+			fmt.Println(err.Error())
+			return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500+" "+err.Error(), nil))
+		}
+		fmt.Println(err.Error())
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500+" "+err.Error(), nil))
 	}
 	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", nil))
