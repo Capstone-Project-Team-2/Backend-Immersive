@@ -39,7 +39,10 @@ func (h *TransactionHandler) Create(c echo.Context) error {
 	err := h.transactionService.Create(newInput, buyer_id)
 	if err != nil {
 		log.Error("handler-internal server error")
-		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
+		if strings.Contains(err.Error(), "no row affected") {
+			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+err.Error(), nil))
+		}
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500+err.Error(), nil))
 	}
 
 	return c.JSON(http.StatusCreated, helpers.WebResponse(http.StatusCreated, "operation success", nil))

@@ -28,7 +28,6 @@ func New(database *gorm.DB) transactions.TransactionDataInterface {
 
 // Insert implements transactions.TransactionDataInterface.
 func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id string) error {
-
 	//1. memulai transaksi
 
 	//2. pengecekan stok tiket
@@ -57,7 +56,15 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 	fmt.Println("map :", count)
 	for key, v := range count {
 		var ticket _eventData.Ticket
-		tx1 := r.db.Where("id =?", key).First(&ticket)
+		//3.pengecekan waktu penjualan tiket
+		tx1 := r.db.Where("id =? and sell_start <= NOW() and sell_end > NOW()", key).First(&ticket)
+		if tx1.Error != nil {
+			return errors.New("tiket tidak tersedia " + tx1.Error.Error())
+		}
+		if tx1.RowsAffected == 0 {
+			return errors.New("tiket tidak tersedia " + tx1.Error.Error())
+		}
+		//4. hitung total pembayaran dan stok tiket
 		fmt.Println("ticketprice: ", ticket.Price)
 		paymentTotal = paymentTotal + (float64(ticket.Price) * float64(v))
 		if ticket.Total < uint(v) {
@@ -65,27 +72,16 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 		}
 	}
 	fmt.Println(paymentTotal)
-	//3.pengecekan waktu event
-	var event _eventData.Event
-	tx2 := r.db.Where("id = ? AND end_date > NOW()", transactionModel.EventID).First(&event)
-	if tx2.RowsAffected == 0 {
-		return errors.New("Waktu event sudah berakhir")
-	}
-
-	//4. hitung total pembayaran
-	// sudah dihandle diatas
 
 	//5. Membuat transaksi
-	tx := r.db.Begin()
-	var err error
-	transactionModel.ID, err = helpers.GenerateUUID()
-	if err != nil {
-		tx.Rollback()
-		return err
+	var errGen error
+	transactionModel.ID, errGen = helpers.GenerateUUID()
+	if errGen != nil {
+		return errGen
 	}
 	transactionModel.PaymentTotal = paymentTotal + 5000.00
 	transactionModel.BuyerID = buyer_id
-	//6. simpan ke database
+	
 	var bank = BankTransfer{
 		Bank: "bca",
 	}
@@ -101,14 +97,12 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 
 	jsonData, errMars := json.Marshal(midtrans)
 	if errMars != nil {
-		tx.Rollback()
 		return errMars
 	}
 
 	//7. kirim ke midtrans
 	request, errReq := http.NewRequest("POST", "https://api.sandbox.midtrans.com/v2/charge", bytes.NewBuffer(jsonData))
 	if errReq != nil {
-		tx.Rollback()
 		return errReq
 	}
 
@@ -119,13 +113,11 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 
 	response, errResp := client.Do(request)
 	if errResp != nil {
-		tx.Rollback()
 		return errResp
 	}
 
 	body, errRead := ioutil.ReadAll(response.Body)
 	if errRead != nil {
-		tx.Rollback()
 		return errRead
 	}
 	fmt.Println("amount", transactionModel.PaymentTotal)
@@ -137,21 +129,33 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 
 	json.Unmarshal(body, &midtransresp)
 
-	var errParse error
 	transactionModel.VirtualAccount = midtransresp.VirtualAccount[0].VANumber
-	transactionModel.TimeLimit, errParse = helpers.ParseTime(midtransresp.ExpiredTime)
-	if errParse != nil {
-		tx.Rollback()
-		return errParse
-	}
+	transactionModel.TimeLimit = helpers.ParseTimeMidtrans(midtransresp.ExpiredTime)
 
+	tx := r.db.Begin()
+	for key, v := range count {
+		var ticket _eventData.Ticket
+		tx.Where("id=?", key).First(&ticket)
+		if tx.Error != nil {
+			// tx.Rollback()
+			return tx.Error
+		}
+
+		tx.Model(&_eventData.Ticket{}).Where("id = ?", key).Update("total", ticket.Total-uint(v))
+		fmt.Println("total:", ticket.Total, v, key, ticket.Total-uint(v), count)
+		if tx.Error != nil {
+			// tx.Rollback()
+			return tx.Error
+		}
+	}
+	//6. simpan ke database
 	tx.Create(&transactionModel)
 	if tx.Error != nil {
-		tx.Rollback()
+		// tx.Rollback()
 		return tx.Error
 	}
+	tx.Rollback()
 	tx.Commit()
-	// dataResp := TransactionModelToCore(transactionData)
 	return nil
 }
 
