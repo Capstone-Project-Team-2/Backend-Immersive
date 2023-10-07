@@ -184,8 +184,10 @@ func (r *transactionQuery) Update(input transactions.MidtransCallbackCore) error
 	tx := r.db.Begin()
 	var err error
 
-	var sign = CheckSignatureKey(input.SignatureKey, input.OrderID, input.StatusCode, input.GrossAmount, config.KEY_SERVER)
-	if !sign {
+	var sign, flag = CheckSignatureKey(input.SignatureKey, input.OrderID, input.StatusCode, input.GrossAmount, config.KEY_SERVER)
+	if !flag {
+		fmt.Println("sign:", sign)
+		fmt.Println("midtrans sign:", input.SignatureKey)
 		return errors.New("signature unvalid")
 	}
 

@@ -47,15 +47,15 @@ func CheckStatus(transactionStatus, fraudStatus string) string {
 	return res
 }
 
-func CheckSignatureKey(SignatureKey, orderId, statusCode, grossAmount, serverKey string) bool {
+func CheckSignatureKey(SignatureKey, orderId, statusCode, grossAmount, serverKey string) (string, bool) {
 	encrypt := sha512.New()
 	data := orderId + statusCode + grossAmount + serverKey
 	encrypt.Write([]byte(data))
 	hash := encrypt.Sum(nil)
 	if SignatureKey == string(hash) {
-		return true
+		return string(hash), true
 	}
-	return false
+	return string(hash), false
 }
 
 /*
