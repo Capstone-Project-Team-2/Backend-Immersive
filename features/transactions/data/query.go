@@ -81,7 +81,7 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 	}
 	transactionModel.PaymentTotal = paymentTotal + 5000.00
 	transactionModel.BuyerID = buyer_id
-	
+
 	var bank = BankTransfer{
 		Bank: "bca",
 	}
@@ -137,24 +137,24 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 		var ticket _eventData.Ticket
 		tx.Where("id=?", key).First(&ticket)
 		if tx.Error != nil {
-			// tx.Rollback()
+			tx.Rollback()
 			return tx.Error
 		}
 
 		tx.Model(&_eventData.Ticket{}).Where("id = ?", key).Update("total", ticket.Total-uint(v))
 		fmt.Println("total:", ticket.Total, v, key, ticket.Total-uint(v), count)
 		if tx.Error != nil {
-			// tx.Rollback()
+			tx.Rollback()
 			return tx.Error
 		}
 	}
 	//6. simpan ke database
 	tx.Create(&transactionModel)
 	if tx.Error != nil {
-		// tx.Rollback()
+		tx.Rollback()
 		return tx.Error
 	}
-	tx.Rollback()
+	// tx.Rollback()
 	tx.Commit()
 	return nil
 }
