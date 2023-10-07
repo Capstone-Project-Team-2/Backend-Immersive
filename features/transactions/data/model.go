@@ -13,7 +13,7 @@ type Transaction struct {
 	OrderID        string           `gorm:"column:order_id;type:varchar(191)"`
 	BuyerID        string           `gorm:"column:buyer_id;type:varchar(191)"`
 	EventID        string           `gorm:"column:event_id;type:varchar(191)"`
-	PaymentStatus  string           `gorm:"column:payment_status;type:enum('Pending','Paid');default:Pending"`
+	PaymentStatus  string           `gorm:"column:payment_status;type:enum('Pending','Paid', 'Failed');default:Pending"`
 	PaymentMethod  string           `gorm:"column:payment_method;"`
 	VirtualAccount string           `gorm:"column:virtual_account"`
 	TimeLimit      time.Time        `gorm:"column:time_limit"`

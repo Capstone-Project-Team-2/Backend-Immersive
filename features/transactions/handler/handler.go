@@ -61,3 +61,17 @@ func (h *TransactionHandler) GetById(c echo.Context) error {
 	var transactionResponse = TransactionCoreToResponse(result)
 	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", transactionResponse))
 }
+
+func (h *TransactionHandler) Update(c echo.Context) error {
+	var midtrans MidtransCallbackRequest
+	errBind := c.Bind(&midtrans)
+	if errBind != nil {
+		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
+	}
+	var midtransCore = MidtransCallbackReqestToCore(midtrans)
+	err := h.transactionService.Update(midtransCore)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
+	}
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", nil))
+}

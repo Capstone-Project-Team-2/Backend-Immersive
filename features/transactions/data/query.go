@@ -2,6 +2,7 @@ package data
 
 import (
 	"bytes"
+	"capstone-tickets/apps/config"
 	_eventData "capstone-tickets/features/events/data"
 	"capstone-tickets/features/transactions"
 	"capstone-tickets/helpers"
@@ -29,7 +30,7 @@ func New(database *gorm.DB) transactions.TransactionDataInterface {
 // Insert implements transactions.TransactionDataInterface.
 func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id string) error {
 	//1. memulai transaksi
-
+	tx := r.db.Begin()
 	//2. pengecekan stok tiket
 	var transactionModel = TransactionCoreToModel(data)
 	fmt.Println("data:", data)
@@ -57,28 +58,30 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 	for key, v := range count {
 		var ticket _eventData.Ticket
 		//3.pengecekan waktu penjualan tiket
-		tx1 := r.db.Where("id =? and sell_start <= NOW() and sell_end > NOW()", key).First(&ticket)
-		if tx1.Error != nil {
-			return errors.New("tiket tidak tersedia " + tx1.Error.Error())
+		err := tx.Where("id =? and sell_start <= NOW() and sell_end > NOW()", key).First(&ticket).Error
+		if err != nil {
+			tx.Rollback()
+			return errors.New("tiket tidak tersedia " + err.Error())
 		}
-		if tx1.RowsAffected == 0 {
-			return errors.New("tiket tidak tersedia " + tx1.Error.Error())
-		}
+		// if tx1.RowsAffected == 0 {
+		// 	return errors.New("tiket tidak tersedia " + tx1.Error.Error())
+		// }
 		//4. hitung total pembayaran dan stok tiket
 		fmt.Println("ticketprice: ", ticket.Price)
 		paymentTotal = paymentTotal + (float64(ticket.Price) * float64(v))
 		if ticket.Total < uint(v) {
-			return errors.New("tiket tidak mencukupi" + tx1.Error.Error())
+			tx.Rollback()
+			return errors.New("tiket tidak mencukupi" + err.Error())
 		}
 	}
 	fmt.Println(paymentTotal)
 
-	//5. Membuat transaksi
-	var errGen error
-	transactionModel.ID, errGen = helpers.GenerateUUID()
-	if errGen != nil {
-		return errGen
+	uuid, err := helpers.GenerateUUID()
+	if err != nil {
+		tx.Rollback()
+		return err
 	}
+	transactionModel.ID = uuid
 	transactionModel.PaymentTotal = paymentTotal + 5000.00
 	transactionModel.BuyerID = buyer_id
 
@@ -97,12 +100,14 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 
 	jsonData, errMars := json.Marshal(midtrans)
 	if errMars != nil {
+		tx.Rollback()
 		return errMars
 	}
 
-	//7. kirim ke midtrans
+	//5. kirim ke midtrans
 	request, errReq := http.NewRequest("POST", "https://api.sandbox.midtrans.com/v2/charge", bytes.NewBuffer(jsonData))
 	if errReq != nil {
+		tx.Rollback()
 		return errReq
 	}
 
@@ -113,11 +118,13 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 
 	response, errResp := client.Do(request)
 	if errResp != nil {
+		tx.Rollback()
 		return errResp
 	}
 
 	body, errRead := ioutil.ReadAll(response.Body)
 	if errRead != nil {
+		tx.Rollback()
 		return errRead
 	}
 	fmt.Println("amount", transactionModel.PaymentTotal)
@@ -126,36 +133,37 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 	fmt.Println(string(body))
 
 	var midtransresp MidtransResponse
-
+	//7. ambil response midtrans
 	json.Unmarshal(body, &midtransresp)
 
 	transactionModel.VirtualAccount = midtransresp.VirtualAccount[0].VANumber
 	transactionModel.TimeLimit = helpers.ParseTimeMidtrans(midtransresp.ExpiredTime)
 
-	tx := r.db.Begin()
 	for key, v := range count {
 		var ticket _eventData.Ticket
-		tx.Where("id=?", key).First(&ticket)
-		if tx.Error != nil {
+		err := tx.Where("id=?", key).First(&ticket).Error
+		if err != nil {
 			tx.Rollback()
-			return tx.Error
+			return err
 		}
 
-		tx.Model(&_eventData.Ticket{}).Where("id = ?", key).Update("total", ticket.Total-uint(v))
+		//8. pengurangan ticket
+		err = tx.Model(&_eventData.Ticket{}).Where("id = ?", key).Update("total", ticket.Total-uint(v)).Error
 		fmt.Println("total:", ticket.Total, v, key, ticket.Total-uint(v), count)
-		if tx.Error != nil {
+		if err != nil {
 			tx.Rollback()
-			return tx.Error
+			return err
 		}
 	}
-	//6. simpan ke database
-	tx.Create(&transactionModel)
-	if tx.Error != nil {
+	//9. simpan ke database
+	err = tx.Create(&transactionModel).Error
+	if err != nil {
 		tx.Rollback()
-		return tx.Error
+		return err
 	}
+	//10. commit transaksi
 	// tx.Rollback()
-	tx.Commit()
+	defer tx.Commit()
 	return nil
 }
 
@@ -172,6 +180,55 @@ func (r *transactionQuery) Select(id string) (transactions.TransactionCore, erro
 }
 
 // Update implements transactions.TransactionDataInterface.
-func (*transactionQuery) Update(id string, updatedData transactions.TransactionCore) error {
-	panic("unimplemented")
+func (r *transactionQuery) Update(input transactions.MidtransCallbackCore) error {
+	tx := r.db.Begin()
+	var err error
+
+	var sign = CheckSignatureKey(input.SignatureKey, input.OrderID, input.StatusCode, input.GrossAmount, config.KEY_SERVER)
+	if !sign {
+		return errors.New("signature unvalid")
+	}
+
+	var transaksiUpdate Transaction
+
+	transaksiUpdate.OrderID = input.TransactionID
+	transaksiUpdate.PaymentStatus = CheckStatus(input.TransactionStatus, input.FraudStatus)
+
+	if transaksiUpdate.PaymentStatus == "Failed" {
+		var trans Transaction
+		var count map[string]int
+		err = tx.Where("id=?", input.OrderID).Preload("TicketDetail").First(&trans).Error
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+		for _, v := range trans.TicketDetail {
+			_, check := count[v.ID]
+			if !check {
+				count[v.ID] = 1
+			} else {
+				count[v.ID] += 1
+			}
+		}
+		for key, v := range count {
+			var ticket _eventData.Ticket
+			err = tx.Where("id = ?", key).First(&ticket).Error
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+			err = tx.Model(&_eventData.Ticket{}).Where("id = ?", key).Update("total", ticket.Total+uint(v)).Error
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+	}
+	err = tx.Model(&Transaction{}).Where("id=?", input.OrderID).Updates(&transaksiUpdate).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	defer tx.Commit()
+	return nil
 }

@@ -9,6 +9,7 @@ import (
 )
 
 var JWT_SECRRET = ""
+var KEY_SERVER = ""
 
 type AppConfig struct {
 	DBUsername          string
@@ -83,5 +84,6 @@ func ReadENV() *AppConfig {
 		app.KEY_CLIENT_MIDTRANS = viper.Get("KEY_CLIENT_MIDTRANS").(string)
 	}
 	JWT_SECRRET = app.jwtKey
+	KEY_SERVER = app.KEY_SERVER_MIDTRANS
 	return &app
 }

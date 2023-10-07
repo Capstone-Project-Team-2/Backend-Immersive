@@ -23,6 +23,16 @@ type TicketDetail struct {
 	TicketID string `json:"ticket_id" form:"ticket_id"`
 }
 
+type MidtransCallbackRequest struct {
+	TransactionID     string `json:"transaction_id"`
+	TransactionStatus string `json:"transaction_status"`
+	OrderID           string `json:"order_id"`
+	FraudStatus       string `json:"fraud_status"`
+	StatusCode        string `json:"status_code"`
+	SignatureKey      string `json:"signature_key"`
+	GrossAmount       string `json:"gross_amount"`
+}
+
 func TransactionRequestToCore(input TransactionRequest) transactions.TransactionCore {
 	var transactionCore = transactions.TransactionCore{
 		ID:            input.ID,
@@ -49,4 +59,17 @@ func TicketDetailRequestToCore(input []TicketDetail) []transactions.TicketDetail
 		ticketCore = append(ticketCore, ticket)
 	}
 	return ticketCore
+}
+
+func MidtransCallbackReqestToCore(input MidtransCallbackRequest) transactions.MidtransCallbackCore {
+	var midtrans = transactions.MidtransCallbackCore{
+		TransactionID:     input.TransactionID,
+		TransactionStatus: input.TransactionStatus,
+		OrderID:           input.OrderID,
+		FraudStatus:       input.FraudStatus,
+		StatusCode:        input.StatusCode,
+		SignatureKey:      input.SignatureKey,
+		GrossAmount:       input.GrossAmount,
+	}
+	return midtrans
 }

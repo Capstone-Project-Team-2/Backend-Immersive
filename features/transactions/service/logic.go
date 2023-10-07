@@ -33,6 +33,7 @@ func (s *TransactionService) Get(id string) (transactions.TransactionCore, error
 }
 
 // Update implements transactions.TransactionServiceInterface.
-func (*TransactionService) Update(id string, updatedData transactions.TransactionCore) error {
-	panic("unimplemented")
+func (s *TransactionService) Update(input transactions.MidtransCallbackCore) error {
+	err := s.transactionRepo.Update(input)
+	return err
 }

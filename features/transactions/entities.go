@@ -25,13 +25,23 @@ type TicketDetailCore struct {
 	UseStatus     string
 }
 
+type MidtransCallbackCore struct {
+	TransactionID     string
+	TransactionStatus string
+	OrderID           string
+	FraudStatus       string
+	StatusCode        string
+	SignatureKey      string
+	GrossAmount       string
+}
+
 type TransactionDataInterface interface {
 	Insert(data TransactionCore, buyer_id string) error
 	Select(id string) (TransactionCore, error)
-	Update(id string, updatedData TransactionCore) error
+	Update(input MidtransCallbackCore) error
 }
 type TransactionServiceInterface interface {
 	Create(data TransactionCore, buyer_id string) error
 	Get(id string) (TransactionCore, error)
-	Update(id string, updatedData TransactionCore) error
+	Update(input MidtransCallbackCore) error
 }
