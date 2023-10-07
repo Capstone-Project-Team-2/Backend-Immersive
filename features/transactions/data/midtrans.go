@@ -1,6 +1,9 @@
 package data
 
-import "crypto/sha512"
+import (
+	"crypto/sha512"
+	"encoding/hex"
+)
 
 type DataMidtrans struct {
 	PaymentType       string            `json:"payment_type"`
@@ -47,17 +50,22 @@ func CheckStatus(transactionStatus, fraudStatus string) string {
 	return res
 }
 
-func CheckSignatureKey(SignatureKey, orderId, statusCode, grossAmount, serverKey string) (string, bool) {
+func CheckSignatureKey(SignatureKey, orderId, statusCode, grossAmount, serverKey string) bool {
 	encrypt := sha512.New()
 	data := orderId + statusCode + grossAmount + serverKey
 	encrypt.Write([]byte(data))
 	hash := encrypt.Sum(nil)
-	if SignatureKey == string(hash) {
-		return string(hash), true
+	str := hex.EncodeToString(hash)
+	if SignatureKey == str {
+		return true
 	}
-	return string(hash), false
+	return false
 }
 
+/*
+sign: ;p�z�?���;7���էP▒▒V��Ll�����~�<=?�b��Rs鲽]Tb��R�atރGKt�
+midtrans sign: 3b70c67ad63feba2fd3b37adcfd1d5a7501bb95685f44c0119186ced98f281b57ebb3c3d3ff2628f9e5273e9b2bd5d105462f9e2528e611274de83474b741796
+*/
 /*
 {
 "transaction_time": "2021-06-23 11:53:34",
