@@ -90,6 +90,7 @@ func InitRouter(db *gorm.DB, c *echo.Echo) {
 	c.POST("/events", eventHandlerAPI.Add, middlewares.JWTMiddleware())
 	c.GET("/events/:event_id", eventHandlerAPI.Get)
 	c.GET("/events", eventHandlerAPI.GetAll)
+	c.PUT("/events/:event_id", eventHandlerAPI.Update, middlewares.JWTMiddleware())
 
 	c.POST("/events/test", eventHandlerAPI.Test, middlewares.JWTMiddleware())
 }
