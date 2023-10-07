@@ -6,6 +6,7 @@ import (
 	_eventData "capstone-tickets/features/events/data"
 	"capstone-tickets/features/transactions"
 	"capstone-tickets/helpers"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -35,6 +36,17 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 	var transactionModel = TransactionCoreToModel(data)
 	fmt.Println("data:", data)
 	fmt.Println("transactionModel:", transactionModel)
+
+	var event _eventData.Event
+	errTx := tx.Where("id=?", data.EventID).First(&event).Error
+	if errTx != nil {
+		return errTx
+	}
+
+	if event.ValidationStatus != "Valid" {
+		return errors.New("event belum divalidasi")
+	}
+
 	var count = map[string]int{}
 	var paymentTotal float64
 	for i, v := range transactionModel.TicketDetail {
@@ -111,7 +123,9 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 		return errReq
 	}
 
-	request.Header.Add("Authorization", "Basic U0ItTWlkLXNlcnZlci1PM1p5QWt2bmgteHByQ0czS0p1OG1OM2w=")
+	serverKey := "Basic " + base64.StdEncoding.EncodeToString([]byte(config.KEY_SERVER))
+
+	request.Header.Add("Authorization", serverKey)
 	request.Header.Add("Content-Type", "application/json")
 
 	client := &http.Client{}
