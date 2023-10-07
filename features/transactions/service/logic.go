@@ -15,12 +15,12 @@ func New(repo transactions.TransactionDataInterface) transactions.TransactionSer
 }
 
 // Create implements transactions.TransactionServiceInterface.
-func (s *TransactionService) Create(data transactions.TransactionCore) (transactions.TransactionCore, error) {
-	result, err := s.transactionRepo.Insert(data)
+func (s *TransactionService) Create(data transactions.TransactionCore, buyer_id string) error {
+	err := s.transactionRepo.Insert(data, buyer_id)
 	if err != nil {
-		return transactions.TransactionCore{}, err
+		return err
 	}
-	return result, nil
+	return nil
 }
 
 // Get implements transactions.TransactionServiceInterface.
@@ -33,6 +33,7 @@ func (s *TransactionService) Get(id string) (transactions.TransactionCore, error
 }
 
 // Update implements transactions.TransactionServiceInterface.
-func (*TransactionService) Update(id string, updatedData transactions.TransactionCore) error {
-	panic("unimplemented")
+func (s *TransactionService) Update(input transactions.MidtransCallbackCore) error {
+	err := s.transactionRepo.Update(input)
+	return err
 }
