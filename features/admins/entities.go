@@ -10,8 +10,18 @@ type AdminCore struct {
 
 type AdminDataInterface interface {
 	Register(AdminCore) error
+	Login(email, password string) (string, string, error)
+	Get(admin_id string) (AdminCore, error)
+	GetAll() ([]AdminCore, error)
+	Update(admin_id string, input AdminCore) error
+	Delete(admin_id string) error
 }
 
 type AdminServiceInterface interface {
 	Register(AdminCore) error
+	Login(email, password string) (string, string, error)
+	Get(admin_id string) (AdminCore, error)
+	GetAll() ([]AdminCore, error)
+	Update(admin_id string, input AdminCore) error
+	Delete(admin_id string) error
 }

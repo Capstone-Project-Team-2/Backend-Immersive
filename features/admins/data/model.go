@@ -18,7 +18,7 @@ type Admin struct {
 	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at;"`
 }
 
-func CoretoModel(data admins.AdminCore) Admin {
+func AdminCoretoModel(data admins.AdminCore) Admin {
 	return Admin{
 		Name:     data.Name,
 		Email:    data.Email,

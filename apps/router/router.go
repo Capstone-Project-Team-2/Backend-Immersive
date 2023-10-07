@@ -64,6 +64,8 @@ func InitRouter(db *gorm.DB, c *echo.Echo) {
 	adminHandlerAPI := _adminHandler.New(adminService)
 
 	c.POST("/admins", adminHandlerAPI.Register)
+	c.POST("/admins/login", adminHandlerAPI.Login)
+
 	c.POST("/buyers/login", buyerHandlerAPI.Login)
 	c.POST("/buyers", buyerHandlerAPI.Create)
 	c.GET("/buyers", buyerHandlerAPI.GetAll, middlewares.JWTMiddleware())
