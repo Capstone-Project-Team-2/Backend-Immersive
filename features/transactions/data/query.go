@@ -15,7 +15,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var log = helpers.Log()
+// var log = helpers.Log()
 
 type transactionQuery struct {
 	db *gorm.DB
@@ -198,7 +198,7 @@ func (r *transactionQuery) Update(input transactions.MidtransCallbackCore) error
 
 	if transaksiUpdate.PaymentStatus == "Failed" {
 		var trans Transaction
-		var count map[string]int
+		var count = map[string]int{}
 		err = tx.Where("id=?", input.OrderID).Preload("TicketDetail").First(&trans).Error
 		if err != nil {
 			tx.Rollback()
