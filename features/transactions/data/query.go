@@ -248,3 +248,17 @@ func (r *transactionQuery) Update(input transactions.MidtransCallbackCore) error
 	defer tx.Commit()
 	return nil
 }
+
+// GetAllTicketDetail implements transactions.TransactionDataInterface.
+func (r *transactionQuery) GetAllTicketDetail(buyer_id string) ([]transactions.TicketDetailCore, error) {
+	var ticketDetailModel []TicketDetail
+	tx := r.db.Where("buyer_id = ?", buyer_id).Find(&ticketDetailModel)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	if tx.RowsAffected == 0 {
+		return nil, errors.New("no row affected")
+	}
+	var ticketDetailCore = TicketDetailModelToCore(ticketDetailModel)
+	return ticketDetailCore, nil
+}
