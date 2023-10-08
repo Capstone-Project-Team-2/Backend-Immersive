@@ -12,7 +12,7 @@ type Admin struct {
 	Name        string         `gorm:"column:name;not null"`
 	Email       string         `gorm:"column:email;unique;not nul"`
 	Password    string         `gorm:"column:password;not null"`
-	PhoneNumber string         `gorm:"column:phone_number;unique"`
+	PhoneNumber string         `gorm:"column:phone_number"`
 	Address     string         `gorm:"column:address"`
 	Role        string         `gorm:"column:role;type:enum('Admin','Superadmin')"`
 	CreatedAt   time.Time      `gorm:"column:created_at"`

@@ -13,7 +13,7 @@ type Partner struct {
 	StartJoin      time.Time `gorm:"column:start_join;autoCreateTime"`
 	Email          string    `gorm:"column:email;not null;unique"`
 	Password       string    `gorm:"column:password;not null"`
-	PhoneNumber    string    `gorm:"column:phone_number;unique"`
+	PhoneNumber    string    `gorm:"column:phone_number"`
 	Address        string    `gorm:"column:address"`
 	ProfilePicture string    `gorm:"column:profile_picture"`
 	CreatedAt      time.Time
