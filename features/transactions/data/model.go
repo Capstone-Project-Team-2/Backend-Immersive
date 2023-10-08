@@ -28,10 +28,10 @@ type Transaction struct {
 
 type TicketDetail struct {
 	ID            string `gorm:"type:varchar(191);primaryKey"`
-	BuyerID       string
-	EventID       string
-	TicketID      string
-	TransactionID string
+	BuyerID       string `gorm:"type:varchar(191)"`
+	EventID       string `gorm:"type:varchar(191)"`
+	TicketID      string `gorm:"type:varchar(191)"`
+	TransactionID string `gorm:"type:varchar(191)"`
 	UseStatus     string `gorm:"column:use_status;type:enum('Pending','Used');default:Pending"`
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
