@@ -1,6 +1,7 @@
 package service
 
 import (
+	"capstone-tickets/features/events"
 	"capstone-tickets/features/transactions"
 )
 
@@ -24,12 +25,12 @@ func (s *TransactionService) Create(data transactions.TransactionCore, buyer_id 
 }
 
 // Get implements transactions.TransactionServiceInterface.
-func (s *TransactionService) Get(id string) (transactions.TransactionCore, error) {
-	result, err := s.transactionRepo.Select(id)
+func (s *TransactionService) Get(transaction_id, buyer_id string) (transactions.TransactionCore, events.EventCore, error) {
+	resultTrans, resultEvent, err := s.transactionRepo.Select(transaction_id, buyer_id)
 	if err != nil {
-		return transactions.TransactionCore{}, err
+		return transactions.TransactionCore{}, events.EventCore{}, err
 	}
-	return result, nil
+	return resultTrans, resultEvent, nil
 }
 
 // Update implements transactions.TransactionServiceInterface.

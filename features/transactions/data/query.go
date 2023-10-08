@@ -3,6 +3,7 @@ package data
 import (
 	"bytes"
 	"capstone-tickets/apps/config"
+	"capstone-tickets/features/events"
 	_eventData "capstone-tickets/features/events/data"
 	"capstone-tickets/features/transactions"
 	"capstone-tickets/helpers"
@@ -182,15 +183,33 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 }
 
 // Select implements transactions.TransactionDataInterface.
-func (r *transactionQuery) Select(id string) (transactions.TransactionCore, error) {
+func (r *transactionQuery) Select(transaction_id, buyer_id string) (transactions.TransactionCore, events.EventCore, error) {
 	var transaction Transaction
+	var event _eventData.Event
 
-	tx := r.db.Where("id=?", id).First(&transaction)
+	tx := r.db.Where("id=?", transaction_id).Preload("Buyer").First(&transaction)
 	if tx.Error != nil {
-		return transactions.TransactionCore{}, tx.Error
+		return transactions.TransactionCore{}, events.EventCore{}, tx.Error
 	}
-	data := TransactionModelToCore(transaction)
-	return data, nil
+	if tx.RowsAffected == 0 {
+		return transactions.TransactionCore{}, events.EventCore{}, errors.New("no row affected")
+	}
+
+	if buyer_id != transaction.BuyerID {
+		return transactions.TransactionCore{}, events.EventCore{}, errors.New("unauthorize")
+	}
+
+	txevent := r.db.Where("id = ?", transaction.EventID).First(&event)
+	if txevent.Error != nil {
+		return transactions.TransactionCore{}, events.EventCore{}, txevent.Error
+	}
+	if txevent.RowsAffected == 0 {
+		return transactions.TransactionCore{}, events.EventCore{}, errors.New("no row affected")
+	}
+
+	dataTrans := TransactionModelToCore(transaction)
+	dataEvent := _eventData.EventModelToCore(event)
+	return dataTrans, dataEvent, nil
 }
 
 // Update implements transactions.TransactionDataInterface.
