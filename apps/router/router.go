@@ -86,6 +86,8 @@ func InitRouter(db *gorm.DB, c *echo.Echo) {
 
 	c.GET("/transactions/tickets", transactionHandlerAPI.GetAllTicketDetail, middlewares.JWTMiddleware())
 
+	c.GET("/transactions/payment_method", transactionHandlerAPI.GetAllPayment)
+
 	c.GET("/partners/test", partnerHandlerAPI.Test, middlewares.JWTMiddleware())
 
 	eventData := _eventData.New(db)
