@@ -49,6 +49,7 @@ func (handler *AdminHandler) Register(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
 	}
 	var input = AdminRequestToCore(Register)
+	input.Role = "Admin"
 	err := handler.AdminService.Register(input)
 	if err != nil {
 		if strings.Contains(err.Error(), "no row affected") {
