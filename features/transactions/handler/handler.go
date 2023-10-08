@@ -2,6 +2,7 @@ package handler
 
 import (
 	"capstone-tickets/apps/middlewares"
+	_eventHandler "capstone-tickets/features/events/handler"
 	"capstone-tickets/features/transactions"
 	"capstone-tickets/helpers"
 	"fmt"
@@ -50,15 +51,24 @@ func (h *TransactionHandler) Create(c echo.Context) error {
 
 func (h *TransactionHandler) GetById(c echo.Context) error {
 	idParam := c.Param("transaction_id")
-	result, err := h.transactionService.Get(idParam)
+	buyer_id, role := middlewares.ExtractToken(c)
+	if role != "Buyer" {
+		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
+	}
+	resultTrans, resultEvent, err := h.transactionService.Get(idParam, buyer_id)
 	if err != nil {
 		if strings.Contains(err.Error(), "no row affected") {
 			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
 		}
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
 	}
-	var transactionResponse = TransactionCoreToResponse(result)
-	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", transactionResponse))
+	var transactionResponse = TransactionCoreToResponse(resultTrans)
+	var eventResponses = _eventHandler.EventCoreToResponse(resultEvent)
+	data := map[string]any{
+		"transaction": transactionResponse,
+		"event":       eventResponses,
+	}
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", data))
 }
 
 func (h *TransactionHandler) Update(c echo.Context) error {

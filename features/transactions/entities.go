@@ -1,6 +1,10 @@
 package transactions
 
-import "time"
+import (
+	"capstone-tickets/features/buyers"
+	"capstone-tickets/features/events"
+	"time"
+)
 
 type TransactionCore struct {
 	ID             string
@@ -13,6 +17,7 @@ type TransactionCore struct {
 	TimeLimit      time.Time
 	TicketCount    uint
 	PaymentTotal   float64
+	Buyer          buyers.BuyerCore
 	TicketDetail   []TicketDetailCore
 }
 
@@ -37,13 +42,13 @@ type MidtransCallbackCore struct {
 
 type TransactionDataInterface interface {
 	Insert(data TransactionCore, buyer_id string) error
-	Select(id string) (TransactionCore, error)
+	Select(transaction_id, buyer_id string) (TransactionCore, events.EventCore, error)
 	Update(input MidtransCallbackCore) error
 	GetAllTicketDetail(buyer_id string) ([]TicketDetailCore, error)
 }
 type TransactionServiceInterface interface {
 	Create(data TransactionCore, buyer_id string) error
-	Get(id string) (TransactionCore, error)
+	Get(transaction_id, buyer_id string) (TransactionCore, events.EventCore, error)
 	Update(input MidtransCallbackCore) error
 	GetAllTicketDetail(buyer_id string) ([]TicketDetailCore, error)
 }

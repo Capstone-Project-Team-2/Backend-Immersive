@@ -81,7 +81,7 @@ func InitRouter(db *gorm.DB, c *echo.Echo) {
 	c.PUT("/volunteers/:volunteer_id", volunteerHandlerAPI.UpdateById, middlewares.JWTMiddleware())
 
 	c.POST("/transactions", transactionHandlerAPI.Create, middlewares.JWTMiddleware())
-	c.GET("/transactions/:transaction_id", transactionHandlerAPI.GetById)
+	c.GET("/transactions/:transaction_id", transactionHandlerAPI.GetById, middlewares.JWTMiddleware())
 	c.POST("/transactions/callback", transactionHandlerAPI.Update)
 
 	c.GET("/transactions/tickets", transactionHandlerAPI.GetAllTicketDetail, middlewares.JWTMiddleware())

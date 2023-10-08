@@ -50,6 +50,7 @@ func TransactionModelToCore(transaction Transaction) transactions.TransactionCor
 		TimeLimit:      transaction.TimeLimit,
 		TicketCount:    transaction.TicketCount,
 		PaymentTotal:   transaction.PaymentTotal,
+		Buyer:          buyerModel.BuyerModelToCore(transaction.Buyer),
 	}
 }
 

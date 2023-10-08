@@ -1,20 +1,23 @@
 package handler
 
 import (
+	_buyerHandler "capstone-tickets/features/buyers/handler"
 	"capstone-tickets/features/transactions"
 	"time"
 )
 
 type TransactionResponse struct {
-	ID            string    `json:"id" form:"id"`
-	OrderID       string    `json:"order_id" form:"order_id"`
-	BuyerID       string    `json:"buyer_id" form:"buyer_id"`
-	EventID       string    `json:"event_id" form:"event_id"`
-	PaymentStatus string    `json:"payment_status" form:"payment_status"`
-	PaymentMethod string    `json:"payment_method" form:"payment_method"`
-	TimeLimit     time.Time `json:"time_limit" form:"time_limit"`
-	TicketCount   uint      `json:"ticket_count" form:"ticket_count"`
-	PaymentTotal  float64   `json:"payment_total" form:"payment_total"`
+	ID             string                      `json:"id" form:"id"`
+	OrderID        string                      `json:"order_id" form:"order_id"`
+	BuyerID        string                      `json:"buyer_id" form:"buyer_id"`
+	EventID        string                      `json:"event_id" form:"event_id"`
+	PaymentStatus  string                      `json:"payment_status" form:"payment_status"`
+	PaymentMethod  string                      `json:"payment_method" form:"payment_method"`
+	VirtualAccount string                      `json:"virtual_account" form:"virtual_account"`
+	TimeLimit      time.Time                   `json:"time_limit" form:"time_limit"`
+	TicketCount    uint                        `json:"ticket_count" form:"ticket_count"`
+	PaymentTotal   float64                     `json:"payment_total" form:"payment_total"`
+	Buyer          _buyerHandler.BuyerResponse `json:"buyer" form:"buyer"`
 }
 
 type TicketDetailresponse struct {
@@ -28,15 +31,17 @@ type TicketDetailresponse struct {
 
 func TransactionCoreToResponse(input transactions.TransactionCore) TransactionResponse {
 	var transactionResp = TransactionResponse{
-		ID:            input.ID,
-		OrderID:       input.OrderID,
-		BuyerID:       input.BuyerID,
-		EventID:       input.EventID,
-		PaymentStatus: input.PaymentStatus,
-		PaymentMethod: input.PaymentMethod,
-		TimeLimit:     input.TimeLimit,
-		TicketCount:   input.TicketCount,
-		PaymentTotal:  input.PaymentTotal,
+		ID:             input.ID,
+		OrderID:        input.OrderID,
+		BuyerID:        input.BuyerID,
+		EventID:        input.EventID,
+		PaymentStatus:  input.PaymentStatus,
+		PaymentMethod:  input.PaymentMethod,
+		VirtualAccount: input.VirtualAccount,
+		TimeLimit:      input.TimeLimit,
+		TicketCount:    input.TicketCount,
+		PaymentTotal:   input.PaymentTotal,
+		Buyer:          _buyerHandler.BuyerCoreToResponse(input.Buyer),
 	}
 	return transactionResp
 }
