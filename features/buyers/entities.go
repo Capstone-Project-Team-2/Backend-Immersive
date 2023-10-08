@@ -22,7 +22,7 @@ type QueryParam struct {
 	ExistOtherPage bool
 }
 type BuyerDataInterface interface {
-	Login(email, password string) (string, string, error)
+	Login(email, password string) (string, string, string, error)
 	Insert(input BuyerCore, file multipart.File) error
 	SelectAll(param QueryParam) (int64, []BuyerCore, error)
 	Select(id string) (BuyerCore, error)
@@ -31,7 +31,7 @@ type BuyerDataInterface interface {
 }
 
 type BuyerServiceInterface interface {
-	Login(email, password string) (string, string, error)
+	Login(email, password string) (string, string, string, error)
 	Create(input BuyerCore, file multipart.File) error
 	GetAll(param QueryParam) (bool, []BuyerCore, error)
 	GetById(id string) (BuyerCore, error)

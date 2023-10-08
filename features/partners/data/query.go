@@ -5,7 +5,6 @@ import (
 	"capstone-tickets/features/partners"
 	"capstone-tickets/helpers"
 	"errors"
-	"fmt"
 	"mime/multipart"
 	"strconv"
 
@@ -25,25 +24,25 @@ func New(db *gorm.DB) partners.PartnerDataInterface {
 }
 
 // Login implements partners.PartnerDataInterface.
-func (repo *PartnerData) Login(email string, password string) (string, string, error) {
+func (repo *PartnerData) Login(email string, password string) (string, string, string, error) {
 	var partnerData Partner
 	tx := repo.db.Where("email = ?", email).First(&partnerData)
 	if tx.Error != nil {
-		return "", "", tx.Error
+		return "", "", "", tx.Error
 	}
 	check := helpers.CheckPassword(password, partnerData.Password)
 	if !check {
-		return "", "", errors.New("password invalid")
+		return "", "", "", errors.New("password invalid")
 	}
 	if tx.RowsAffected == 0 {
-		return "", "", errNoRow
+		return "", "", "", errNoRow
 	}
 
 	token, errToken := middlewares.CreateToken(partnerData.ID, "Partner")
 	if errToken != nil {
-		return "", "", errToken
+		return "", "", "", errToken
 	}
-	return partnerData.ID, token, nil
+	return partnerData.ID, partnerData.Name, token, nil
 }
 
 // Delete implements partners.PartnerDataInterface.
@@ -104,7 +103,6 @@ func (repo *PartnerData) SelectAll(page, item, search string) ([]partners.Partne
 	var tx *gorm.DB
 	var query = repo.db
 
-	fmt.Println(search)
 	if search != "" {
 		query = query.Where("name like ?", "%"+search+"%")
 	}
@@ -134,7 +132,6 @@ func (repo *PartnerData) SelectAll(page, item, search string) ([]partners.Partne
 		limit := itemConv
 		offset := itemConv * (pageConv - 1)
 		query = query.Limit(limit).Offset(offset)
-		fmt.Println(limit, offset)
 	}
 
 	tx = query.Find(&partner)

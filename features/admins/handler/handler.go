@@ -26,12 +26,13 @@ func (handler *AdminHandler) Login(c echo.Context) error {
 	if errBind != nil {
 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
 	}
-	token, id, role, err := handler.AdminService.Login(login.Email, login.Password)
+	token, id, name, role, err := handler.AdminService.Login(login.Email, login.Password)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500+" "+err.Error(), nil))
 	}
 	data := map[string]any{
 		"id":    id,
+		"name":  name,
 		"token": token,
 		"role":  role,
 	}

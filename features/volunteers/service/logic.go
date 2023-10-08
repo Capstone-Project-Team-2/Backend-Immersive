@@ -2,12 +2,9 @@ package service
 
 import (
 	"capstone-tickets/features/volunteers"
-	"capstone-tickets/helpers"
 
 	"github.com/go-playground/validator"
 )
-
-var log = helpers.Log()
 
 type VolunteerService struct {
 	volunteerRepo volunteers.VolunteerDataInterface
@@ -29,24 +26,23 @@ func (s *VolunteerService) Create(input volunteers.VolunteerCore) error {
 
 	err := s.volunteerRepo.Insert(input)
 	if err != nil {
-		log.Error(err.Error())
 		return err
 	}
 	return nil
 }
 
 // Login implements volunteers.VolunteerServiceInterface.
-func (s *VolunteerService) Login(email string, password string) (string, string, error) {
+func (s *VolunteerService) Login(email string, password string) (string, string, string, error) {
 	loginInput := volunteers.Login{
 		Email:    email,
 		Password: password,
 	}
 	errValidate := s.validate.Struct(loginInput)
 	if errValidate != nil {
-		return "", "", errValidate
+		return "", "", "", errValidate
 	}
-	id, token, err := s.volunteerRepo.Login(email, password)
-	return id, token, err
+	id, name, token, err := s.volunteerRepo.Login(email, password)
+	return id, name, token, err
 }
 
 // DeleteById implements volunteers.VolunteerServiceInterface.
@@ -98,7 +94,6 @@ func (s *VolunteerService) GetById(id string) (volunteers.VolunteerCore, error) 
 func (s *VolunteerService) UpdateById(id string, input volunteers.VolunteerCore) error {
 	err := s.validate.Struct(input)
 	if err != nil {
-		log.Error(err.Error())
 		return err
 	}
 

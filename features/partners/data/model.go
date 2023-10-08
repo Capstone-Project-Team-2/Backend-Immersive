@@ -11,9 +11,9 @@ type Partner struct {
 	ID             string    `gorm:"column:id;type:varchar(191);primaryKey"`
 	Name           string    `gorm:"column:name"`
 	StartJoin      time.Time `gorm:"column:start_join;autoCreateTime"`
-	Email          string    `gorm:"column:email;not null"`
+	Email          string    `gorm:"column:email;not null;unique"`
 	Password       string    `gorm:"column:password;not null"`
-	PhoneNumber    string    `gorm:"column:phone_number"`
+	PhoneNumber    string    `gorm:"column:phone_number;unique"`
 	Address        string    `gorm:"column:address"`
 	ProfilePicture string    `gorm:"column:profile_picture"`
 	CreatedAt      time.Time

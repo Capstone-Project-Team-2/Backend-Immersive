@@ -10,8 +10,6 @@ import (
 	"gorm.io/gorm"
 )
 
-var log = helpers.Log()
-
 type volunteerQuery struct {
 	db *gorm.DB
 }
@@ -28,7 +26,6 @@ func (r *volunteerQuery) Insert(input volunteers.VolunteerCore) error {
 
 	hashPassword, err := helpers.HassPassword(input.Password)
 	if err != nil {
-		log.Error("error while hashing password")
 		return errors.New("error while hashing password")
 	}
 	NewData.Password = hashPassword
@@ -40,40 +37,37 @@ func (r *volunteerQuery) Insert(input volunteers.VolunteerCore) error {
 
 	tx := r.db.Create(&NewData)
 	if tx.Error != nil {
-		log.Error("error insert data")
-		return errors.New("error insert data")
+		return tx.Error
 	}
 
 	if tx.RowsAffected == 0 {
-		log.Warn("no volunteer has been created")
 		return errors.New("no row affected")
 	}
-	log.Sugar().Infof("new volunteer has been created: %s", NewData.Email)
 	return nil
 }
 
 // Login implements volunteers.VolunteerDataInterface.
-func (r *volunteerQuery) Login(email string, password string) (string, string, error) {
+func (r *volunteerQuery) Login(email string, password string) (string, string, string, error) {
 	var dataVolunteer Volunteer
 	tx := r.db.Where("email=?", email).First(&dataVolunteer)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
-		return "", "", errors.New("invalid email")
+		return "", "", "", errors.New("invalid email")
 	}
 
 	if tx.RowsAffected == 0 {
-		return "", "", errors.New("no row affected")
+		return "", "", "", errors.New("no row affected")
 	}
 
 	checkPassword := helpers.CheckPassword(password, dataVolunteer.Password)
 	if !checkPassword {
-		return "", "", errors.New("password does not match")
+		return "", "", "", errors.New("password does not match")
 	}
 
 	token, err := middlewares.CreateToken(dataVolunteer.ID, "Volunteer")
 	if err != nil {
-		return "", "", errors.New("error while creating jwt token")
+		return "", "", "", errors.New("error while creating jwt token")
 	}
-	return dataVolunteer.ID, token, nil
+	return dataVolunteer.ID, dataVolunteer.Name, token, nil
 }
 
 // Select implements volunteers.VolunteerDataInterface.
@@ -144,7 +138,6 @@ func (r *volunteerQuery) Update(id string, input volunteers.VolunteerCore) error
 	if updatedVolunteer.Password != "" {
 		HassPassword, err := helpers.HassPassword(updatedVolunteer.Password)
 		if err != nil {
-			log.Error("error while hashing password")
 			return errors.New("error while hashing password")
 		}
 		updatedVolunteer.Password = HassPassword

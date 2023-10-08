@@ -7,26 +7,32 @@ import (
 )
 
 type TransactionResponse struct {
-	ID             string                      `json:"id" form:"id"`
-	OrderID        string                      `json:"order_id" form:"order_id"`
-	BuyerID        string                      `json:"buyer_id" form:"buyer_id"`
-	EventID        string                      `json:"event_id" form:"event_id"`
-	PaymentStatus  string                      `json:"payment_status" form:"payment_status"`
-	PaymentMethod  string                      `json:"payment_method" form:"payment_method"`
-	VirtualAccount string                      `json:"virtual_account" form:"virtual_account"`
-	TimeLimit      time.Time                   `json:"time_limit" form:"time_limit"`
-	TicketCount    uint                        `json:"ticket_count" form:"ticket_count"`
-	PaymentTotal   float64                     `json:"payment_total" form:"payment_total"`
-	Buyer          _buyerHandler.BuyerResponse `json:"buyer" form:"buyer"`
+	ID             string                      `json:"id,omitempty"`
+	OrderID        string                      `json:"order_id,omitempty"`
+	BuyerID        string                      `json:"buyer_id,omitempty"`
+	EventID        string                      `json:"event_id,omitempty"`
+	PaymentStatus  string                      `json:"payment_status,omitempty"`
+	PaymentMethod  string                      `json:"payment_method,omitempty"`
+	VirtualAccount string                      `json:"virtual_account,omitempty"`
+	TimeLimit      time.Time                   `json:"time_limit,omitempty"`
+	TicketCount    uint                        `json:"ticket_count,omitempty"`
+	PaymentTotal   float64                     `json:"payment_total,omitempty"`
+	Buyer          _buyerHandler.BuyerResponse `json:"buyer,omitempty"`
 }
 
 type TicketDetailresponse struct {
-	ID            string `json:"id" form:"id"`
-	BuyerID       string `json:"buyer_id" form:"buyer_id"`
-	EventID       string `json:"event_id" form:"event_id"`
-	TicketID      string `json:"ticket_id" form:"ticket_id"`
-	TransactionID string `json:"transaction_id" form:"transaction_id"`
-	UseStatus     string `json:"use_status" form:"use_status"`
+	ID            string `json:"id,omitempty"`
+	BuyerID       string `json:"buyer_id,omitempty"`
+	EventID       string `json:"event_id,omitempty"`
+	TicketID      string `json:"ticket_id,omitempty"`
+	TransactionID string `json:"transaction_id,omitempty"`
+	UseStatus     string `json:"use_status,omitempty"`
+}
+
+type PaymentMethodResponse struct {
+	ID         string  `json:"id,omitempty"`
+	Bank       string  `json:"bank,omitempty"`
+	ServiceFee float64 `json:"service_fee,omitempty"`
 }
 
 func TransactionCoreToResponse(input transactions.TransactionCore) TransactionResponse {
@@ -79,4 +85,17 @@ func ListTicketDetailCoreToResponse(input []transactions.TicketDetailCore) []Tic
 		ticketDetail = append(ticketDetail, ticket)
 	}
 	return ticketDetail
+}
+
+func ListPaymentMethodCoreToResponse(input []transactions.PaymentMethodCore) []PaymentMethodResponse {
+	var paymenMethod []PaymentMethodResponse
+	for _, v := range input {
+		var payment = PaymentMethodResponse{
+			ID:         v.ID,
+			Bank:       v.Bank,
+			ServiceFee: v.ServiceFee,
+		}
+		paymenMethod = append(paymenMethod, payment)
+	}
+	return paymenMethod
 }

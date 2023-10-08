@@ -7,13 +7,13 @@ import (
 )
 
 type PartnerResponse struct {
-	ID             string    `json:"id" form:"id"`
-	Name           string    `json:"name" form:"name"`
-	StartJoin      time.Time `json:"start_join" form:"start_join"`
-	Email          string    `json:"email" form:"email"`
-	PhoneNumber    string    `json:"phone_number" form:"phone_number"`
-	Address        string    `json:"address" form:"address"`
-	ProfilePicture string    `json:"profile_picture" form:"profile_picture"`
+	ID             string    `json:"id,omitempty"`
+	Name           string    `json:"name,omitempty"`
+	StartJoin      time.Time `json:"start_join,omitempty"`
+	Email          string    `json:"email,omitempty"`
+	PhoneNumber    string    `json:"phone_number,omitempty"`
+	Address        string    `json:"address,omitempty"`
+	ProfilePicture string    `json:"profile_picture,omitempty"`
 }
 
 func PartnerCoreToResponse(input partners.PartnerCore) PartnerResponse {

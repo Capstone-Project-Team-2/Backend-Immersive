@@ -4,8 +4,6 @@ import (
 	"capstone-tickets/apps/middlewares"
 	"capstone-tickets/features/events"
 	"capstone-tickets/helpers"
-	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
@@ -34,7 +32,6 @@ func (handler *EventHandler) Add(c echo.Context) error {
 	file, header, errFile := c.Request().FormFile("banner_picture")
 	if errFile != nil {
 		if strings.Contains(errFile.Error(), "no such file") {
-			fmt.Println(helpers.DefaultFile)
 			filename = helpers.DefaultFile
 		} else {
 			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+" errFile "+errFile.Error(), nil))
@@ -59,7 +56,6 @@ func (handler *EventHandler) Add(c echo.Context) error {
 	var eventCore = EventRequestToCore(eventReq)
 	eventCore.PartnerID = id
 	eventCore.BannerPicture = filename
-	fmt.Println("handler event core:", eventCore)
 	err := handler.eventService.Add(eventCore, file)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
@@ -105,7 +101,6 @@ func (handler *EventHandler) Update(c echo.Context) error {
 	file, header, errFile := c.Request().FormFile("banner_picture")
 	if errFile != nil {
 		if strings.Contains(errFile.Error(), "no such file") {
-			fmt.Println(helpers.DefaultFile)
 			filename = helpers.DefaultFile
 		} else {
 			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+" errFile "+errFile.Error(), nil))
@@ -161,13 +156,11 @@ func (handler *EventHandler) Test(c echo.Context) error {
 	if errForm != nil {
 		return c.JSON(http.StatusBadRequest, errForm)
 	}
-	log.Println(form)
 	dec := formam.NewDecoder(&formam.DecoderOptions{TagName: "formam"})
 	err := dec.Decode(form, &eventReq)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
 	}
 	var eventCore = EventRequestToCore(eventReq)
-	log.Println(eventCore)
 	return c.JSON(http.StatusOK, eventCore)
 }

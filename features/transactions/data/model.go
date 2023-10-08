@@ -38,6 +38,12 @@ type TicketDetail struct {
 	DeletedAt     gorm.DeletedAt
 }
 
+type PaymentMethod struct {
+	ID         string  `gorm:"column:id;type:varchar(191);primaryKey"`
+	Bank       string  `gorm:"column:bank;not null"`
+	ServiceFee float64 `gorm:"column:service_fee;default:0"`
+}
+
 func TransactionModelToCore(transaction Transaction) transactions.TransactionCore {
 	return transactions.TransactionCore{
 		ID:             transaction.ID,
@@ -100,4 +106,17 @@ func TicketDetailModelToCore(input []TicketDetail) []transactions.TicketDetailCo
 		ticketDetailCore = append(ticketDetailCore, ticket)
 	}
 	return ticketDetailCore
+}
+
+func ListPaymentMethodModelToCore(input []PaymentMethod) []transactions.PaymentMethodCore {
+	var paymenMethod []transactions.PaymentMethodCore
+	for _, v := range input {
+		var payment = transactions.PaymentMethodCore{
+			ID:         v.ID,
+			Bank:       v.Bank,
+			ServiceFee: v.ServiceFee,
+		}
+		paymenMethod = append(paymenMethod, payment)
+	}
+	return paymenMethod
 }

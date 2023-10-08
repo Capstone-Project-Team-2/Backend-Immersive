@@ -13,7 +13,6 @@ type BuyerRequest struct {
 	Email       string `json:"email" form:"email"`
 	Password    string `json:"password" form:"password"`
 	Address     string `json:"address" form:"address"`
-	//ProfilePicture string `json:"profile_picture" form:"profile_picture"`
 }
 
 func BuyerRequestToCore(input BuyerRequest) buyers.BuyerCore {
@@ -23,7 +22,6 @@ func BuyerRequestToCore(input BuyerRequest) buyers.BuyerCore {
 		Password:    input.Password,
 		PhoneNumber: input.PhoneNumber,
 		Address:     input.Address,
-		//ProfilePicture: input.ProfilePicture,
 	}
 	return buyerCore
 }

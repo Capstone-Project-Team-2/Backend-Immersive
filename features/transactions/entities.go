@@ -40,15 +40,23 @@ type MidtransCallbackCore struct {
 	GrossAmount       string
 }
 
+type PaymentMethodCore struct {
+	ID         string
+	Bank       string
+	ServiceFee float64
+}
+
 type TransactionDataInterface interface {
 	Insert(data TransactionCore, buyer_id string) error
 	Select(transaction_id, buyer_id string) (TransactionCore, events.EventCore, error)
 	Update(input MidtransCallbackCore) error
 	GetAllTicketDetail(buyer_id string) ([]TicketDetailCore, error)
+	GetAllPaymentMethod() ([]PaymentMethodCore, error)
 }
 type TransactionServiceInterface interface {
 	Create(data TransactionCore, buyer_id string) error
 	Get(transaction_id, buyer_id string) (TransactionCore, events.EventCore, error)
 	Update(input MidtransCallbackCore) error
 	GetAllTicketDetail(buyer_id string) ([]TicketDetailCore, error)
+	GetAllPaymentMethod() ([]PaymentMethodCore, error)
 }

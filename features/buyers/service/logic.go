@@ -2,13 +2,10 @@ package service
 
 import (
 	"capstone-tickets/features/buyers"
-	"capstone-tickets/helpers"
 	"mime/multipart"
 
 	"github.com/go-playground/validator"
 )
-
-var log = helpers.Log()
 
 type BuyerService struct {
 	buyerRepo buyers.BuyerDataInterface
@@ -90,15 +87,15 @@ func (s *BuyerService) Create(input buyers.BuyerCore, file multipart.File) error
 }
 
 // Login implements buyers.BuyerServiceInterface.
-func (s *BuyerService) Login(email string, password string) (string, string, error) {
+func (s *BuyerService) Login(email string, password string) (string, string, string, error) {
 	loginInput := buyers.Login{
 		Email:    email,
 		Password: password,
 	}
 	errValidate := s.validate.Struct(loginInput)
 	if errValidate != nil {
-		return "", "", errValidate
+		return "", "", "", errValidate
 	}
-	id, token, err := s.buyerRepo.Login(email, password)
-	return id, token, err
+	id, name, token, err := s.buyerRepo.Login(email, password)
+	return id, name, token, err
 }

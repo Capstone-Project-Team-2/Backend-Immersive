@@ -4,7 +4,6 @@ import (
 	"capstone-tickets/features/events"
 	"capstone-tickets/helpers"
 	"errors"
-	"fmt"
 	"mime/multipart"
 	"strconv"
 
@@ -60,7 +59,7 @@ func (repo *EventQuery) Insert(input events.EventCore, file multipart.File) erro
 		eventModel.BannerPicture = eventModel.ID + eventModel.BannerPicture
 		helpers.Uploader.UploadFile(file, eventModel.BannerPicture, helpers.EventPath)
 	}
-	fmt.Println("query event model: ", eventModel)
+
 	tx := repo.db.Create(&eventModel)
 	if tx.Error != nil {
 		return tx.Error
@@ -160,7 +159,6 @@ func (repo *EventQuery) Update(event_id, partner_id string, input events.EventCo
 	for i := 0; i < len(tickets); i++ {
 		tickets[i].EventID = event_id
 	}
-	fmt.Println(tickets)
 
 	if eventUpdate.BannerPicture != helpers.DefaultFile {
 		eventUpdate.BannerPicture = event_id + eventUpdate.BannerPicture
@@ -173,10 +171,5 @@ func (repo *EventQuery) Update(event_id, partner_id string, input events.EventCo
 	if tx.RowsAffected == 0 {
 		return errNoRow
 	}
-
-	// errRep := repo.db.Model(&eventUpdate).Where("id=?", event_id).Association("Ticket").Replace(&tickets)
-	// if errRep != nil {
-	// 	return errRep
-	// }
 	return nil
 }

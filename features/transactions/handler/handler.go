@@ -5,14 +5,11 @@ import (
 	_eventHandler "capstone-tickets/features/events/handler"
 	"capstone-tickets/features/transactions"
 	"capstone-tickets/helpers"
-	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/labstack/echo/v4"
 )
-
-var log = helpers.Log()
 
 type TransactionHandler struct {
 	transactionService transactions.TransactionServiceInterface
@@ -30,8 +27,6 @@ func (h *TransactionHandler) Create(c echo.Context) error {
 
 	errBind := c.Bind(&transactionReq)
 	if errBind != nil {
-		log.Error("handler - error on bind request")
-		fmt.Println(errBind)
 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
 	}
 
@@ -39,7 +34,6 @@ func (h *TransactionHandler) Create(c echo.Context) error {
 
 	err := h.transactionService.Create(newInput, buyer_id)
 	if err != nil {
-		log.Error("handler-internal server error")
 		if strings.Contains(err.Error(), "no row affected") {
 			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+err.Error(), nil))
 		}
@@ -81,10 +75,8 @@ func (h *TransactionHandler) Update(c echo.Context) error {
 	err := h.transactionService.Update(midtransCore)
 	if err != nil {
 		if strings.Contains(err.Error(), "signature") {
-			fmt.Println(err.Error())
 			return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500+" "+err.Error(), nil))
 		}
-		fmt.Println(err.Error())
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500+" "+err.Error(), nil))
 	}
 	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", nil))
@@ -98,4 +90,13 @@ func (h *TransactionHandler) GetAllTicketDetail(c echo.Context) error {
 	}
 	var ticketDetailResponse = ListTicketDetailCoreToResponse(result)
 	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", ticketDetailResponse))
+}
+
+func (h *TransactionHandler) GetAllPayment(c echo.Context) error {
+	result, err := h.transactionService.GetAllPaymentMethod()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500+" "+err.Error(), nil))
+	}
+	var paymenResp = ListPaymentMethodCoreToResponse(result)
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", paymenResp))
 }
