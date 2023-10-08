@@ -3,7 +3,6 @@ package service
 import (
 	"capstone-tickets/features/buyers"
 	"capstone-tickets/helpers"
-	"errors"
 	"mime/multipart"
 
 	"github.com/go-playground/validator"
@@ -26,12 +25,30 @@ func (s *BuyerService) DeleteById(id string) error {
 }
 
 // GetAll implements buyers.BuyerServiceInterface.
-func (s *BuyerService) GetAll() ([]buyers.BuyerCore, error) {
-	result, err := s.buyerRepo.SelectAll()
+func (s *BuyerService) GetAll(param buyers.QueryParam) (bool, []buyers.BuyerCore, error) {
+	var totalPage int64
+	nextPage := true
+	count, dataBuyer, err := s.buyerRepo.SelectAll(param)
 	if err != nil {
-		return nil, err
+		return true, nil, err
 	}
-	return result, nil
+	if count == 0 {
+		nextPage = false
+	}
+	if param.ExistOtherPage || count != 0 {
+		totalPage = count / int64(param.LimitPerPage)
+		if count%int64(param.LimitPerPage) != 0 {
+			totalPage += 1
+		}
+
+		if param.Page == int(totalPage) {
+			nextPage = false
+		}
+		if dataBuyer == nil {
+			nextPage = false
+		}
+	}
+	return nextPage, dataBuyer, nil
 }
 
 // GetById implements buyers.BuyerServiceInterface.
@@ -61,15 +78,12 @@ func New(repo buyers.BuyerDataInterface) buyers.BuyerServiceInterface {
 
 // Create implements buyers.BuyerServiceInterface.
 func (s *BuyerService) Create(input buyers.BuyerCore, file multipart.File) error {
-	err := s.validate.Struct(input)
-	if err != nil {
-		// log.Error(err.Error())
-		return err
+	if errValidate := s.validate.Struct(input); errValidate != nil {
+		return errValidate
 	}
 
-	err = s.buyerRepo.Insert(input, file)
+	err := s.buyerRepo.Insert(input, file)
 	if err != nil {
-		// log.Error(err.Error())
 		return err
 	}
 	return nil
@@ -77,8 +91,13 @@ func (s *BuyerService) Create(input buyers.BuyerCore, file multipart.File) error
 
 // Login implements buyers.BuyerServiceInterface.
 func (s *BuyerService) Login(email string, password string) (string, string, error) {
-	if email == "" || password == "" {
-		return "", "", errors.New("Email and Password cannot be empty")
+	loginInput := buyers.Login{
+		Email:    email,
+		Password: password,
+	}
+	errValidate := s.validate.Struct(loginInput)
+	if errValidate != nil {
+		return "", "", errValidate
 	}
 	id, token, err := s.buyerRepo.Login(email, password)
 	return id, token, err

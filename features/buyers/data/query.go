@@ -5,6 +5,7 @@ import (
 	"capstone-tickets/features/buyers"
 	"capstone-tickets/helpers"
 	"errors"
+	"fmt"
 	"mime/multipart"
 
 	"gorm.io/gorm"
@@ -62,7 +63,7 @@ func (r *buyerQuery) Login(email string, password string) (string, string, error
 	var dataBuyer Buyer
 	tx := r.db.Where("email=?", email).First(&dataBuyer)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
-		return "", "", errors.New("invalid email and password")
+		return "", "", errors.New("invalid email")
 	}
 
 	if tx.RowsAffected == 0 {
@@ -137,19 +138,39 @@ func (r *buyerQuery) Select(id string) (buyers.BuyerCore, error) {
 }
 
 // SelectAll implements buyers.BuyerDataInterface.
-func (r *buyerQuery) SelectAll() ([]buyers.BuyerCore, error) {
+func (r *buyerQuery) SelectAll(param buyers.QueryParam) (int64, []buyers.BuyerCore, error) {
 	var buyer []Buyer
-	tx := r.db.Find(&buyer)
+	var totalBuyer int64
+	// Initial query
+	query := r.db
+	if param.ExistOtherPage {
+		offset := (param.Page - 1) * param.LimitPerPage
+		fmt.Println("offset", offset)
+		if param.SearchName != "" {
+			query = query.Where("name like ?", "%"+param.SearchName+"%")
+		}
+		tx := query.Find(&buyer)
+		if tx.Error != nil {
+			return 0, nil, errors.New("failed get all buyer")
+		}
+		totalBuyer = tx.RowsAffected
+		query = query.Offset(offset).Limit(param.LimitPerPage)
+	}
+	// Handle searching by description if provided
+	if param.SearchName != "" {
+		query = query.Where("name like ?", "%"+param.SearchName+"%")
+	}
+	tx := query.Find(&buyer)
 	if tx.Error != nil {
-		return nil, tx.Error
+		return 0, nil, tx.Error
 	}
 	if tx.RowsAffected == 0 {
-		return nil, errors.New("data not found")
+		return 0, nil, errors.New("data not found")
 	}
 
 	//mapping from buyer -> BuyerCore
 	coreBuyerSlice := ListBuyerModelToCore(buyer)
-	return coreBuyerSlice, nil
+	return totalBuyer, coreBuyerSlice, nil
 }
 
 // Delete implements buyers.BuyerDataInterface.

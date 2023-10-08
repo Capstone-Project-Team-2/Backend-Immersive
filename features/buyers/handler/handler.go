@@ -6,6 +6,7 @@ import (
 	"capstone-tickets/helpers"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -32,7 +33,13 @@ func (h *BuyerHandler) Login(c echo.Context) error {
 
 	id, token, err := h.buyerService.Login(login.Email, login.Password)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, err.Error(), nil))
+		if strings.Contains(err.Error(), "validation") {
+			return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+"Input tidak valid, harap isi email dan password sesuai ketentuan"+err.Error(), nil))
+		} else if strings.Contains(err.Error(), "invalid email") {
+			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+"Email yang anda berikan tidak terdaftar"+err.Error(), nil))
+		} else {
+			return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+"password yang anda berikan tidak valid"+err.Error(), nil))
+		}
 	}
 	var data = map[string]any{
 		"id":    id,
@@ -69,23 +76,51 @@ func (h *BuyerHandler) Create(c echo.Context) error {
 
 	err := h.buyerService.Create(newInput, file)
 	if err != nil {
-		// log.Error("handler-internal server error")
-		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
+		if strings.Contains(err.Error(), "validation") {
+			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+" "+err.Error(), nil))
+		} else {
+			return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
+		}
 	}
 	return c.JSON(http.StatusCreated, helpers.WebResponse(http.StatusCreated, "operation success", nil))
 
 }
 func (h *BuyerHandler) GetAll(c echo.Context) error {
-	_, role := middlewares.ExtractToken(c)
-	if role != "Admin" {
-		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
+	// _, role := middlewares.ExtractToken(c)
+	// if role != "Admin" {
+	// 	return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
+	// }
+	var qParam buyers.QueryParam
+	page := c.QueryParam("page")
+	limitPerPage := c.QueryParam("limitPerPage")
+
+	if limitPerPage == "" {
+		qParam.ExistOtherPage = false
+	} else {
+		qParam.ExistOtherPage = true
+		itemsConv, errItem := strconv.Atoi(limitPerPage)
+		if errItem != nil {
+			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
+		}
+		qParam.LimitPerPage = itemsConv
 	}
-	result, err := h.buyerService.GetAll()
+	if page == "" {
+		qParam.Page = 1
+	} else {
+		pageConv, errPage := strconv.Atoi(page)
+		if errPage != nil {
+			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
+		}
+		qParam.Page = pageConv
+	}
+	searchName := c.QueryParam("search_name")
+	qParam.SearchName = searchName
+	bol, data, err := h.buyerService.GetAll(qParam)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
 	}
-	var partnerResp = ListBuyerCoreToResponse(result)
-	return c.JSON(http.StatusOK, helpers.FindAllWebResponse(http.StatusOK, "operation success", partnerResp, false))
+	var buyerResp = ListBuyerCoreToResponse(data)
+	return c.JSON(http.StatusOK, helpers.FindAllWebResponse(http.StatusOK, "operation success", buyerResp, bol))
 }
 
 func (h *BuyerHandler) GetById(c echo.Context) error {
