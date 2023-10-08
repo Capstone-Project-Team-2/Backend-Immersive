@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"mime/multipart"
+	"strconv"
 
 	"gorm.io/gorm"
 )
@@ -20,6 +21,18 @@ func New(db *gorm.DB) events.EventDataInterface {
 	return &EventQuery{
 		db: db,
 	}
+}
+
+// Validate implements events.EventDataInterface.
+func (repo *EventQuery) Validate(event_id, validation_status string) error {
+	tx := repo.db.Model(&Event{}).Where("id = ?", event_id).Update("validation_status", validation_status)
+	if tx.Error != nil {
+		return tx.Error
+	}
+	if tx.RowsAffected == 0 {
+		return errNoRow
+	}
+	return nil
 }
 
 // Delete implements events.EventDataInterface.
@@ -70,21 +83,60 @@ func (repo *EventQuery) Select(id string) (events.EventCore, error) {
 }
 
 // SelectAll implements events.EventDataInterface.
-func (repo *EventQuery) SelectAll() ([]events.EventCore, error) {
+func (repo *EventQuery) SelectAll(page, item, search string) ([]events.EventCore, bool, error) {
 	var eventData []Event
+	var tx *gorm.DB
+	var query = repo.db.Where("execution_status = ? and end_date > NOW()", "On Going").Preload("Partner")
 
-	tx := repo.db.Where("execution_status = ? and end_date > NOW()", "On Going").Preload("Partner").Preload("Ticket").Find(&eventData)
+	if search != "" {
+		query = query.Where("name like ?", "%"+search+"%")
+	}
 
-	// fmt.Println(eventData[0].Ticket)
-
+	queryCount := query
+	tx = queryCount.Find(&eventData)
 	if tx.Error != nil {
-		return nil, tx.Error
+		return nil, false, tx.Error
 	}
 	if tx.RowsAffected == 0 {
-		return nil, errNoRow
+		return nil, false, errNoRow
+	}
+
+	count := tx.RowsAffected
+	var pageConv, itemConv int
+	var errPage, errItem error
+	if page != "" && item != "" {
+		pageConv, errPage = strconv.Atoi(page)
+		if errPage != nil {
+			return nil, false, errPage
+		}
+		itemConv, errItem = strconv.Atoi(item)
+		if errItem != nil {
+			return nil, false, errItem
+		}
+		limit := itemConv
+		offset := itemConv * (pageConv - 1)
+		query = query.Limit(limit).Offset(offset)
+	}
+	tx = query.Find(&eventData)
+	if tx.Error != nil {
+		return nil, false, tx.Error
+	}
+	if tx.RowsAffected == 0 {
+		return nil, false, errNoRow
+	}
+
+	next := true
+	if itemConv != 0 {
+		var totalPage = count / int64(itemConv)
+		if count%int64(itemConv) != 0 {
+			totalPage += 1
+		}
+		if totalPage == int64(pageConv) {
+			next = false
+		}
 	}
 	var eventCore = ListEventModelToCore(eventData)
-	return eventCore, nil
+	return eventCore, next, nil
 }
 
 // Update implements events.EventDataInterface.
