@@ -84,3 +84,19 @@ func TicketDetailCoreToModel(input []transactions.TicketDetailCore) []TicketDeta
 	}
 	return ticketDetailModel
 }
+
+func TicketDetailModelToCore(input []TicketDetail) []transactions.TicketDetailCore {
+	var ticketDetailCore []transactions.TicketDetailCore
+	for _, v := range input {
+		var ticket = transactions.TicketDetailCore{
+			ID:            v.ID,
+			BuyerID:       v.BuyerID,
+			EventID:       v.EventID,
+			TicketID:      v.TicketID,
+			TransactionID: v.TransactionID,
+			UseStatus:     v.UseStatus,
+		}
+		ticketDetailCore = append(ticketDetailCore, ticket)
+	}
+	return ticketDetailCore
+}

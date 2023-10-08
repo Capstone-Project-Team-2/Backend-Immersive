@@ -46,7 +46,6 @@ func (h *TransactionHandler) Create(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, helpers.WebResponse(http.StatusCreated, "operation success", nil))
-
 }
 
 func (h *TransactionHandler) GetById(c echo.Context) error {
@@ -79,4 +78,14 @@ func (h *TransactionHandler) Update(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500+" "+err.Error(), nil))
 	}
 	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", nil))
+}
+
+func (h *TransactionHandler) GetAllTicketDetail(c echo.Context) error {
+	buyer_id, _ := middlewares.ExtractToken(c)
+	result, err := h.transactionService.GetAllTicketDetail(buyer_id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500+" "+err.Error(), nil))
+	}
+	var ticketDetailResponse = ListTicketDetailCoreToResponse(result)
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", ticketDetailResponse))
 }

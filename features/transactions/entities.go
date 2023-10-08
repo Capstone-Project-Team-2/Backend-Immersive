@@ -39,9 +39,11 @@ type TransactionDataInterface interface {
 	Insert(data TransactionCore, buyer_id string) error
 	Select(id string) (TransactionCore, error)
 	Update(input MidtransCallbackCore) error
+	GetAllTicketDetail(buyer_id string) ([]TicketDetailCore, error)
 }
 type TransactionServiceInterface interface {
 	Create(data TransactionCore, buyer_id string) error
 	Get(id string) (TransactionCore, error)
 	Update(input MidtransCallbackCore) error
+	GetAllTicketDetail(buyer_id string) ([]TicketDetailCore, error)
 }

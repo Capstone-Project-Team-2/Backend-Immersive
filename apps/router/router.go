@@ -81,8 +81,10 @@ func InitRouter(db *gorm.DB, c *echo.Echo) {
 	c.PUT("/volunteers/:volunteer_id", volunteerHandlerAPI.UpdateById, middlewares.JWTMiddleware())
 
 	c.POST("/transactions", transactionHandlerAPI.Create, middlewares.JWTMiddleware())
-	c.GET("/transactions", transactionHandlerAPI.GetById)
+	c.GET("/transactions/:transaction_id", transactionHandlerAPI.GetById)
 	c.POST("/transactions/callback", transactionHandlerAPI.Update)
+
+	c.GET("/transactions/tickets", transactionHandlerAPI.GetAllTicketDetail, middlewares.JWTMiddleware())
 
 	c.GET("/partners/test", partnerHandlerAPI.Test, middlewares.JWTMiddleware())
 
@@ -96,5 +98,4 @@ func InitRouter(db *gorm.DB, c *echo.Echo) {
 	c.PUT("/events/:event_id", eventHandlerAPI.Update, middlewares.JWTMiddleware())
 
 	c.POST("/events/test", eventHandlerAPI.Test, middlewares.JWTMiddleware())
-
 }

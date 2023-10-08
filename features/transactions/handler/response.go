@@ -17,6 +17,15 @@ type TransactionResponse struct {
 	PaymentTotal  float64   `json:"payment_total" form:"payment_total"`
 }
 
+type TicketDetailresponse struct {
+	ID            string `json:"id" form:"id"`
+	BuyerID       string `json:"buyer_id" form:"buyer_id"`
+	EventID       string `json:"event_id" form:"event_id"`
+	TicketID      string `json:"ticket_id" form:"ticket_id"`
+	TransactionID string `json:"transaction_id" form:"transaction_id"`
+	UseStatus     string `json:"use_status" form:"use_status"`
+}
+
 func TransactionCoreToResponse(input transactions.TransactionCore) TransactionResponse {
 	var transactionResp = TransactionResponse{
 		ID:            input.ID,
@@ -49,4 +58,20 @@ func ListTransactionCoreToResponse(input []transactions.TransactionCore) []Trans
 		transactionResp = append(transactionResp, transaction)
 	}
 	return transactionResp
+}
+
+func ListTicketDetailCoreToResponse(input []transactions.TicketDetailCore) []TicketDetailresponse {
+	var ticketDetail []TicketDetailresponse
+	for _, v := range input {
+		var ticket = TicketDetailresponse{
+			ID:            v.ID,
+			BuyerID:       v.BuyerID,
+			EventID:       v.EventID,
+			TicketID:      v.TicketID,
+			TransactionID: v.TransactionID,
+			UseStatus:     v.UseStatus,
+		}
+		ticketDetail = append(ticketDetail, ticket)
+	}
+	return ticketDetail
 }
