@@ -26,7 +26,7 @@ func (handler *PartnerHandler) Login(c echo.Context) error {
 	if errBind != nil {
 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
 	}
-	id, token, err := handler.PartnerService.Login(login.Email, login.Password)
+	id, name, token, err := handler.PartnerService.Login(login.Email, login.Password)
 	if err != nil {
 		if strings.Contains(err.Error(), "no row affected") {
 			return c.JSON(http.StatusNotFound, helpers.WebResponse(http.StatusNotFound, helpers.Error404+" account not found", nil))
@@ -38,6 +38,7 @@ func (handler *PartnerHandler) Login(c echo.Context) error {
 	}
 	var data = map[string]any{
 		"id":    id,
+		"name":  name,
 		"token": token,
 	}
 	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", data))

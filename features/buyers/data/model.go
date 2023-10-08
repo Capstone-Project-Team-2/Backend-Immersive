@@ -10,7 +10,7 @@ import (
 type Buyer struct {
 	ID             string `gorm:"column:id;type:varchar(191);primaryKey"`
 	Name           string `gorm:"column:name;not null"`
-	PhoneNumber    string `gorm:"column:phone_number"`
+	PhoneNumber    string `gorm:"column:phone_number;unique"`
 	Email          string `gorm:"column:email;not null; unique"`
 	Password       string `gorm:"column:password;not null"`
 	Address        string `gorm:"column:address"`

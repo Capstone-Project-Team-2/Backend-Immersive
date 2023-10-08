@@ -20,7 +20,7 @@ type Login struct {
 }
 
 type VolunteerDataInterface interface {
-	Login(email, password string) (string, string, error)
+	Login(email, password string) (string, string, string, error)
 	Insert(input VolunteerCore) error
 	SelectAll(eventId string, param QueryParam) (int64, []VolunteerCore, error)
 	Select(id string) (VolunteerCore, error)
@@ -29,7 +29,7 @@ type VolunteerDataInterface interface {
 }
 
 type VolunteerServiceInterface interface {
-	Login(email, password string) (string, string, error)
+	Login(email, password string) (string, string, string, error)
 	Create(input VolunteerCore) error
 	GetAll(eventId string, param QueryParam) (bool, []VolunteerCore, error)
 	GetById(id string) (VolunteerCore, error)

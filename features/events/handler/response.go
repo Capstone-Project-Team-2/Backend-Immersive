@@ -7,27 +7,27 @@ import (
 )
 
 type EventResponse struct {
-	ID               string                         `json:"id" form:"id"`
-	Name             string                         `json:"name" form:"name"`
-	Location         string                         `json:"location" form:"location"`
-	Description      string                         `json:"description" form:"description"`
-	TermCondition    string                         `json:"term_condition" form:"term_condition"`
-	StartDate        string                         `json:"start_date" form:"end_date"`
-	EndDate          string                         `json:"end_date" form:"end_date"`
-	ValidationStatus string                         `json:"validation_status" form:"validation_status"`
-	BannerPicture    string                         `json:"banner_picture" form:"banner_picture"`
-	Partner          partnerHandler.PartnerResponse `json:"partner" form:"partner"`
-	Ticket           []TicketResponse               `json:"ticket,omitempty" form:"ticket"`
+	ID               string                         `json:"id,omitempty"`
+	Name             string                         `json:"name,omitempty"`
+	Location         string                         `json:"location,omitempty"`
+	Description      string                         `json:"description,omitempty"`
+	TermCondition    string                         `json:"term_condition,omitempty"`
+	StartDate        string                         `json:"start_date,omitempty"`
+	EndDate          string                         `json:"end_date,omitempty"`
+	ValidationStatus string                         `json:"validation_status,omitempty"`
+	BannerPicture    string                         `json:"banner_picture,omitempty"`
+	Partner          partnerHandler.PartnerResponse `json:"partner,omitempty"`
+	Ticket           []TicketResponse               `json:"ticket,omitempty"`
 }
 
 type TicketResponse struct {
-	ID        string `json:"id" form:"id"`
-	EventID   string `json:"event_id" form:"event_id"`
-	NameClass string `json:"name_class" form:"name_class"`
-	Total     uint   `json:"total" form:"total"`
-	Price     uint   `json:"price" form:"price"`
-	SellStart string `json:"sell_start"`
-	SellEnd   string `json:"sell_end"`
+	ID        string `json:"id,omitempty"`
+	EventID   string `json:"event_id,omitempty"`
+	NameClass string `json:"name_class,omitempty"`
+	Total     uint   `json:"total,omitempty"`
+	Price     uint   `json:"price,omitempty"`
+	SellStart string `json:"sell_start,omitempty"`
+	SellEnd   string `json:"sell_end,omitempty"`
 }
 
 func EventCoreToResponse(input events.EventCore) EventResponse {

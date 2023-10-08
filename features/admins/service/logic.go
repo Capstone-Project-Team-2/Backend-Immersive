@@ -30,9 +30,9 @@ func (*AdminService) GetAll() ([]admins.AdminCore, error) {
 }
 
 // Login implements admins.AdminServiceInterface.
-func (service *AdminService) Login(email string, password string) (string, string, string, error) {
-	token, id, role, err := service.AdminData.Login(email, password)
-	return token, id, role, err
+func (service *AdminService) Login(email string, password string) (string, string, string, string, error) {
+	token, id, name, role, err := service.AdminData.Login(email, password)
+	return token, id, name, role, err
 }
 
 // Update implements admins.AdminServiceInterface.

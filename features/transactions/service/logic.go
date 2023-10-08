@@ -15,6 +15,12 @@ func New(repo transactions.TransactionDataInterface) transactions.TransactionSer
 	}
 }
 
+// GetAllPaymentMethode implements transactions.TransactionServiceInterface.
+func (s *TransactionService) GetAllPaymentMethod() ([]transactions.PaymentMethodCore, error) {
+	result, err := s.transactionRepo.GetAllPaymentMethod()
+	return result, err
+}
+
 // Create implements transactions.TransactionServiceInterface.
 func (s *TransactionService) Create(data transactions.TransactionCore, buyer_id string) error {
 	err := s.transactionRepo.Insert(data, buyer_id)

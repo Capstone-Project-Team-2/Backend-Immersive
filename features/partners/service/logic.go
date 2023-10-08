@@ -16,9 +16,9 @@ func New(repo partners.PartnerDataInterface) partners.PartnerServiceInterface {
 }
 
 // Login implements partners.PartnerServiceInterface.
-func (service *PartnerService) Login(email string, password string) (string, string, error) {
-	id, token, err := service.PartnerData.Login(email, password)
-	return id, token, err
+func (service *PartnerService) Login(email string, password string) (string, string, string, error) {
+	id, name, token, err := service.PartnerData.Login(email, password)
+	return id, name, token, err
 }
 
 // Add implements partners.PartnerServiceInterface.

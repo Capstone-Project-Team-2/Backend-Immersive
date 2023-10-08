@@ -4,15 +4,12 @@ import (
 	"capstone-tickets/apps/middlewares"
 	"capstone-tickets/features/buyers"
 	"capstone-tickets/helpers"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v4"
 )
-
-var log = helpers.Log()
 
 type BuyerHandler struct {
 	buyerService buyers.BuyerServiceInterface
@@ -31,7 +28,7 @@ func (h *BuyerHandler) Login(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
 	}
 
-	id, token, err := h.buyerService.Login(login.Email, login.Password)
+	id, name, token, err := h.buyerService.Login(login.Email, login.Password)
 	if err != nil {
 		if strings.Contains(err.Error(), "validation") {
 			return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+"Input tidak valid, harap isi email dan password sesuai ketentuan"+err.Error(), nil))
@@ -43,6 +40,7 @@ func (h *BuyerHandler) Login(c echo.Context) error {
 	}
 	var data = map[string]any{
 		"id":    id,
+		"name":  name,
 		"token": token,
 	}
 	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "Login success", data))
@@ -66,8 +64,7 @@ func (h *BuyerHandler) Create(c echo.Context) error {
 
 	errBind := c.Bind(&buyerReq)
 	if errBind != nil {
-		fmt.Println(errBind)
-		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
+		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+""+errBind.Error(), nil))
 	}
 
 	newInput := BuyerRequestToCore(buyerReq)
@@ -161,9 +158,7 @@ func (h *BuyerHandler) UpdateById(c echo.Context) error {
 	var buyerReq BuyerRequest
 	errBind := c.Bind(&buyerReq)
 	if errBind != nil {
-		// log.Error("handler - error on bind request")
-		fmt.Println(errBind)
-		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
+		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+" "+errBind.Error(), nil))
 	}
 
 	updatedData := BuyerRequestToCore(buyerReq)
@@ -171,7 +166,6 @@ func (h *BuyerHandler) UpdateById(c echo.Context) error {
 
 	err := h.buyerService.UpdateById(idParam, updatedData, file)
 	if err != nil {
-		// log.Error("handler-internal server error")
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
 	}
 	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", nil))

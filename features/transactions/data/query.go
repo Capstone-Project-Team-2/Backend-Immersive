@@ -10,14 +10,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
 	"gorm.io/gorm"
 )
-
-// var log = helpers.Log()
 
 type transactionQuery struct {
 	db *gorm.DB
@@ -29,14 +26,26 @@ func New(database *gorm.DB) transactions.TransactionDataInterface {
 	}
 }
 
+// GetAllPaymentMethode implements transactions.TransactionDataInterface.
+func (r *transactionQuery) GetAllPaymentMethod() ([]transactions.PaymentMethodCore, error) {
+	var payment []PaymentMethod
+	tx := r.db.Find(&payment)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	if tx.RowsAffected == 0 {
+		return nil, errors.New("no row affected")
+	}
+	var paymenCore = ListPaymentMethodModelToCore(payment)
+	return paymenCore, nil
+}
+
 // Insert implements transactions.TransactionDataInterface.
 func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id string) error {
 	//1. memulai transaksi
 	tx := r.db.Begin()
 	//2. pengecekan stok tiket
 	var transactionModel = TransactionCoreToModel(data)
-	fmt.Println("data:", data)
-	fmt.Println("transactionModel:", transactionModel)
 
 	var event _eventData.Event
 	errTx := tx.Where("id=?", data.EventID).First(&event).Error
@@ -56,9 +65,8 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 		if errGen != nil {
 			return errGen
 		}
-		fmt.Println(errGen)
+
 		transactionModel.TicketDetail[i].BuyerID = buyer_id
-		fmt.Println("ticket:", v.TicketID)
 		_, exist := count[v.TicketID]
 		if !exist {
 			count[v.TicketID] = 1
@@ -67,7 +75,6 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 		}
 	}
 
-	fmt.Println("map :", count)
 	for key, v := range count {
 		var ticket _eventData.Ticket
 		//3.pengecekan waktu penjualan tiket
@@ -76,30 +83,34 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 			tx.Rollback()
 			return errors.New("tiket tidak tersedia " + err.Error())
 		}
-		// if tx1.RowsAffected == 0 {
-		// 	return errors.New("tiket tidak tersedia " + tx1.Error.Error())
-		// }
+
 		//4. hitung total pembayaran dan stok tiket
-		fmt.Println("ticketprice: ", ticket.Price)
 		paymentTotal = paymentTotal + (float64(ticket.Price) * float64(v))
 		if ticket.Total < uint(v) {
 			tx.Rollback()
 			return errors.New("tiket tidak mencukupi" + err.Error())
 		}
 	}
-	fmt.Println(paymentTotal)
 
 	uuid, err := helpers.GenerateUUID()
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
+
+	var payment PaymentMethod
+	err = tx.Where("id=?", transactionModel.PaymentMethod).First(&payment).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
 	transactionModel.ID = uuid
-	transactionModel.PaymentTotal = paymentTotal + 5000.00
+	transactionModel.PaymentTotal = paymentTotal + payment.ServiceFee
 	transactionModel.BuyerID = buyer_id
 
 	var bank = BankTransfer{
-		Bank: "bca",
+		Bank: transactionModel.PaymentMethod,
 	}
 	var trans = TransactionDetail{
 		OrderID:     transactionModel.ID,
@@ -142,10 +153,6 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 		tx.Rollback()
 		return errRead
 	}
-	fmt.Println("amount", transactionModel.PaymentTotal)
-	fmt.Println("id", transactionModel.ID)
-	fmt.Println("ada pesan:")
-	fmt.Println(string(body))
 
 	var midtransresp MidtransResponse
 	//7. ambil response midtrans
@@ -164,7 +171,6 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 
 		//8. pengurangan ticket
 		err = tx.Model(&_eventData.Ticket{}).Where("id = ?", key).Update("total", ticket.Total-uint(v)).Error
-		fmt.Println("total:", ticket.Total, v, key, ticket.Total-uint(v), count)
 		if err != nil {
 			tx.Rollback()
 			return err
@@ -177,7 +183,6 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 		return err
 	}
 	//10. commit transaksi
-	// tx.Rollback()
 	defer tx.Commit()
 	return nil
 }
@@ -219,8 +224,6 @@ func (r *transactionQuery) Update(input transactions.MidtransCallbackCore) error
 
 	var sign = CheckSignatureKey(input.SignatureKey, input.OrderID, input.StatusCode, input.GrossAmount, config.KEY_SERVER)
 	if !sign {
-		fmt.Println("sign:", sign)
-		fmt.Println("midtrans sign:", input.SignatureKey)
 		return errors.New("signature unvalid")
 	}
 
