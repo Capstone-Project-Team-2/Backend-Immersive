@@ -1,11 +1,13 @@
 package admins
 
 type AdminCore struct {
-	ID       string
-	Name     string
-	Email    string
-	Password string
-	Role     string
+	ID          string
+	Name        string
+	Email       string
+	Password    string
+	PhoneNumber string
+	Address     string
+	Role        string
 }
 
 type AdminDataInterface interface {
