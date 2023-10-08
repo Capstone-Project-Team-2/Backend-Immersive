@@ -66,7 +66,6 @@ func (h *BuyerHandler) Create(c echo.Context) error {
 
 	errBind := c.Bind(&buyerReq)
 	if errBind != nil {
-		// log.Error("handler - error on bind request")
 		fmt.Println(errBind)
 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
 	}
@@ -86,10 +85,10 @@ func (h *BuyerHandler) Create(c echo.Context) error {
 
 }
 func (h *BuyerHandler) GetAll(c echo.Context) error {
-	// _, role := middlewares.ExtractToken(c)
-	// if role != "Admin" {
-	// 	return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
-	// }
+	_, role := middlewares.ExtractToken(c)
+	if role != "Admin" {
+		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
+	}
 	var qParam buyers.QueryParam
 	page := c.QueryParam("page")
 	limitPerPage := c.QueryParam("limitPerPage")
