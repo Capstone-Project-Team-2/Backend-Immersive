@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"capstone-tickets/apps/middlewares"
 	"capstone-tickets/features/admins"
 	"capstone-tickets/helpers"
 	"net/http"
@@ -18,8 +19,30 @@ func New(service admins.AdminServiceInterface) *AdminHandler {
 		AdminService: service,
 	}
 }
-func (handler *AdminHandler) Register(c echo.Context) error {
 
+func (handler *AdminHandler) Login(c echo.Context) error {
+	var login LoginAdminRequest
+	errBind := c.Bind(&login)
+	if errBind != nil {
+		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
+	}
+	token, id, role, err := handler.AdminService.Login(login.Email, login.Password)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500+" "+err.Error(), nil))
+	}
+	data := map[string]any{
+		"id":    id,
+		"token": token,
+		"role":  role,
+	}
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", data))
+}
+
+func (handler *AdminHandler) Register(c echo.Context) error {
+	_, role := middlewares.ExtractToken(c)
+	if role != "Superadmin" {
+		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
+	}
 	var Register AdminRegister
 	errBind := c.Bind(&Register)
 	if errBind != nil {

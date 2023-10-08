@@ -28,11 +28,13 @@ type Event struct {
 }
 
 type Ticket struct {
-	ID        string `gorm:"column:id;type:varchar(191);primaryKey"`
-	EventID   string `gorm:"column:event_id;type:varchar(191)"`
-	NameClass string `gorm:"column:name_class;"`
-	Total     uint   `gorm:"column:total"`
-	Price     uint   `gorm:"column:price"`
+	ID        string    `gorm:"column:id;type:varchar(191);primaryKey"`
+	EventID   string    `gorm:"column:event_id;type:varchar(191)"`
+	NameClass string    `gorm:"column:name_class;"`
+	Total     uint      `gorm:"column:total"`
+	Price     uint      `gorm:"column:price"`
+	SellStart time.Time `gorm:"column:sell_start"`
+	SellEnd   time.Time `gorm:"column:sell_end"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt
@@ -91,6 +93,7 @@ func ListEventModelToCore(input []Event) []events.EventCore {
 			ExecutionStatus:  value.ExecutionStatus,
 			BannerPicture:    value.BannerPicture,
 			Partner:          partnerModel.PartnerModelToCore(value.Partner),
+			Ticket:           ListTicketModelToCore(value.Ticket),
 		}
 		eventCore = append(eventCore, event)
 	}
@@ -105,6 +108,8 @@ func ListTicketCoreToModel(input []events.TicketCore) []Ticket {
 			NameClass: value.NameClass,
 			Total:     value.Total,
 			Price:     value.Price,
+			SellStart: value.SellStart,
+			SellEnd:   value.SellEnd,
 		}
 		ticketModel = append(ticketModel, ticket)
 	}
@@ -120,6 +125,8 @@ func ListTicketModelToCore(input []Ticket) []events.TicketCore {
 			NameClass: value.NameClass,
 			Total:     value.Total,
 			Price:     value.Price,
+			SellStart: value.SellStart,
+			SellEnd:   value.SellEnd,
 		}
 		ticketData = append(ticketData, ticket)
 	}

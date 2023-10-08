@@ -64,6 +64,8 @@ func InitRouter(db *gorm.DB, c *echo.Echo) {
 	adminHandlerAPI := _adminHandler.New(adminService)
 
 	c.POST("/admins", adminHandlerAPI.Register)
+	c.POST("/admins/login", adminHandlerAPI.Login)
+
 	c.POST("/buyers/login", buyerHandlerAPI.Login)
 	c.POST("/buyers", buyerHandlerAPI.Create)
 	c.GET("/buyers", buyerHandlerAPI.GetAll, middlewares.JWTMiddleware())
@@ -78,8 +80,9 @@ func InitRouter(db *gorm.DB, c *echo.Echo) {
 	c.DELETE("/volunteers/:volunteer_id", volunteerHandlerAPI.DeleteById, middlewares.JWTMiddleware())
 	c.PUT("/volunteers/:volunteer_id", volunteerHandlerAPI.UpdateById, middlewares.JWTMiddleware())
 
-	c.POST("/transactions", transactionHandlerAPI.Create)
+	c.POST("/transactions", transactionHandlerAPI.Create, middlewares.JWTMiddleware())
 	c.GET("/transactions", transactionHandlerAPI.GetById)
+	c.POST("/transactions/callback", transactionHandlerAPI.Update)
 
 	c.GET("/partners/test", partnerHandlerAPI.Test, middlewares.JWTMiddleware())
 
@@ -88,6 +91,10 @@ func InitRouter(db *gorm.DB, c *echo.Echo) {
 	eventHandlerAPI := _eventHandler.New(eventService)
 
 	c.POST("/events", eventHandlerAPI.Add, middlewares.JWTMiddleware())
+	c.GET("/events/:event_id", eventHandlerAPI.Get)
+	c.GET("/events", eventHandlerAPI.GetAll)
+	c.PUT("/events/:event_id", eventHandlerAPI.Update, middlewares.JWTMiddleware())
+
 	c.POST("/events/test", eventHandlerAPI.Test, middlewares.JWTMiddleware())
 
 }

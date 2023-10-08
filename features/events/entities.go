@@ -28,20 +28,22 @@ type TicketCore struct {
 	NameClass string
 	Total     uint
 	Price     uint
+	SellStart time.Time
+	SellEnd   time.Time
 }
 
 type EventDataInterface interface {
 	Insert(input EventCore, file multipart.File) error
 	Select(id string) (EventCore, error)
-	SelectAll(userId, role, validation, execution string) ([]EventCore, error)
-	Update(id string, input EventCore) error
+	SelectAll() ([]EventCore, error)
+	Update(event_id, partner_id string, input EventCore, file multipart.File) error
 	Delete(id string) error
 }
 
 type EventServiceInterface interface {
 	Add(input EventCore, file multipart.File) error
 	Get(id string) (EventCore, error)
-	GetAll(userId, role, validation, execution string) ([]EventCore, error)
-	Update(id string, input EventCore) error
+	GetAll() ([]EventCore, error)
+	Update(event_id, partner_id string, input EventCore, file multipart.File) error
 	Delete(id string) error
 }

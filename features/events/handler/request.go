@@ -2,7 +2,7 @@ package handler
 
 import (
 	"capstone-tickets/features/events"
-	"time"
+	"capstone-tickets/helpers"
 )
 
 type EventRequest struct {
@@ -16,15 +16,12 @@ type EventRequest struct {
 }
 
 type TicketRequest struct {
+	ID        string `json:"id" form:"id"`
 	NameClass string `json:"name_class" form:"name_class" formam:"name_class"`
 	Total     uint   `json:"total" form:"total" formam:"total"`
 	Price     uint   `json:"price" form:"price" formam:"price"`
-}
-
-func ParseTime(val string) time.Time {
-	layout := "2006-01-02 15:04:05"
-	date, _ := time.Parse(layout, val)
-	return date
+	SellStart string `formam:"sell_start" json:"sell_start" form:"sell_start"`
+	SellEnd   string `formam:"sell_end" json:"sell_end" form:"sell_end"`
 }
 
 func EventRequestToCore(input EventRequest) events.EventCore {
@@ -33,8 +30,8 @@ func EventRequestToCore(input EventRequest) events.EventCore {
 		Location:      input.Location,
 		Description:   input.Description,
 		TermCondition: input.TermCondition,
-		StartDate:     ParseTime(input.StartDate),
-		EndDate:       ParseTime(input.EndDate),
+		StartDate:     helpers.ParseStringToTime(input.StartDate),
+		EndDate:       helpers.ParseStringToTime(input.EndDate),
 		Ticket:        ListTicketRequestToCore(input.Ticket),
 	}
 	return eventCore
@@ -44,9 +41,12 @@ func ListTicketRequestToCore(input []TicketRequest) []events.TicketCore {
 	var ticketsCore []events.TicketCore
 	for _, value := range input {
 		var ticket = events.TicketCore{
+			ID:        value.ID,
 			NameClass: value.NameClass,
 			Total:     value.Total,
 			Price:     value.Price,
+			SellStart: helpers.ParseStringToTime(value.SellStart),
+			SellEnd:   helpers.ParseStringToTime(value.SellEnd),
 		}
 		ticketsCore = append(ticketsCore, ticket)
 	}

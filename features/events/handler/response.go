@@ -3,7 +3,7 @@ package handler
 import (
 	"capstone-tickets/features/events"
 	partnerHandler "capstone-tickets/features/partners/handler"
-	"time"
+	"capstone-tickets/helpers"
 )
 
 type EventResponse struct {
@@ -12,11 +12,11 @@ type EventResponse struct {
 	Location      string                         `json:"location" form:"location"`
 	Description   string                         `json:"description" form:"description"`
 	TermCondition string                         `json:"term_condition" form:"term_condition"`
-	StartDate     time.Time                      `json:"start_date" form:"end_date"`
-	EndDate       time.Time                      `json:"end_date" form:"end_date"`
+	StartDate     string                         `json:"start_date" form:"end_date"`
+	EndDate       string                         `json:"end_date" form:"end_date"`
 	BannerPicture string                         `json:"banner_picture" form:"banner_picture"`
 	Partner       partnerHandler.PartnerResponse `json:"partner" form:"partner"`
-	Ticket        []TicketResponse               `json:"ticket" form:"ticket"`
+	Ticket        []TicketResponse               `json:"ticket,omitempty" form:"ticket"`
 }
 
 type TicketResponse struct {
@@ -25,6 +25,8 @@ type TicketResponse struct {
 	NameClass string `json:"name_class" form:"name_class"`
 	Total     uint   `json:"total" form:"total"`
 	Price     uint   `json:"price" form:"price"`
+	SellStart string `json:"sell_start"`
+	SellEnd   string `json:"sell_end"`
 }
 
 func EventCoreToResponse(input events.EventCore) EventResponse {
@@ -34,9 +36,9 @@ func EventCoreToResponse(input events.EventCore) EventResponse {
 		Location:      input.Location,
 		Description:   input.Description,
 		TermCondition: input.TermCondition,
-		StartDate:     input.StartDate,
-		EndDate:       input.EndDate,
-		BannerPicture: input.BannerPicture,
+		StartDate:     helpers.ParseTimeToString(input.StartDate),
+		EndDate:       helpers.ParseTimeToString(input.EndDate),
+		BannerPicture: helpers.FileFetchEvent + input.BannerPicture,
 		Partner:       partnerHandler.PartnerCoreToResponse(input.Partner),
 		Ticket:        ListTicketCoreToResponse(input.Ticket),
 	}
@@ -52,9 +54,10 @@ func ListEventCoreToResponse(input []events.EventCore) []EventResponse {
 			Location:      value.Location,
 			Description:   value.Description,
 			TermCondition: value.TermCondition,
-			StartDate:     value.StartDate,
-			EndDate:       value.EndDate,
-			BannerPicture: value.BannerPicture,
+			StartDate:     helpers.ParseTimeToString(value.StartDate),
+			EndDate:       helpers.ParseTimeToString(value.EndDate),
+			BannerPicture: helpers.FileFetchEvent + value.BannerPicture,
+			Partner:       partnerHandler.PartnerCoreToResponse(value.Partner),
 		}
 		eventResp = append(eventResp, event)
 	}
@@ -70,6 +73,8 @@ func ListTicketCoreToResponse(input []events.TicketCore) []TicketResponse {
 			NameClass: value.NameClass,
 			Total:     value.Total,
 			Price:     value.Price,
+			SellStart: helpers.ParseTimeToString(value.SellStart),
+			SellEnd:   helpers.ParseTimeToString(value.SellEnd),
 		}
 		ticketData = append(ticketData, ticket)
 	}

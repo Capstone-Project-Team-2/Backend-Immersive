@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"capstone-tickets/apps/middlewares"
 	"capstone-tickets/features/transactions"
 	"capstone-tickets/helpers"
 	"fmt"
@@ -23,6 +24,7 @@ func New(service transactions.TransactionServiceInterface) *TransactionHandler {
 }
 
 func (h *TransactionHandler) Create(c echo.Context) error {
+	buyer_id, _ := middlewares.ExtractToken(c)
 	var transactionReq TransactionRequest
 
 	errBind := c.Bind(&transactionReq)
@@ -34,13 +36,16 @@ func (h *TransactionHandler) Create(c echo.Context) error {
 
 	newInput := TransactionRequestToCore(transactionReq)
 
-	result, err := h.transactionService.Create(newInput)
+	err := h.transactionService.Create(newInput, buyer_id)
 	if err != nil {
 		log.Error("handler-internal server error")
-		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
+		if strings.Contains(err.Error(), "no row affected") {
+			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+err.Error(), nil))
+		}
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500+err.Error(), nil))
 	}
-	resultResp := TransactionCoreToResponse(result)
-	return c.JSON(http.StatusCreated, helpers.WebResponse(http.StatusCreated, "operation success", resultResp))
+
+	return c.JSON(http.StatusCreated, helpers.WebResponse(http.StatusCreated, "operation success", nil))
 
 }
 
@@ -55,4 +60,23 @@ func (h *TransactionHandler) GetById(c echo.Context) error {
 	}
 	var transactionResponse = TransactionCoreToResponse(result)
 	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", transactionResponse))
+}
+
+func (h *TransactionHandler) Update(c echo.Context) error {
+	var midtrans MidtransCallbackRequest
+	errBind := c.Bind(&midtrans)
+	if errBind != nil {
+		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
+	}
+	var midtransCore = MidtransCallbackReqestToCore(midtrans)
+	err := h.transactionService.Update(midtransCore)
+	if err != nil {
+		if strings.Contains(err.Error(), "signature") {
+			fmt.Println(err.Error())
+			return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500+" "+err.Error(), nil))
+		}
+		fmt.Println(err.Error())
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500+" "+err.Error(), nil))
+	}
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", nil))
 }
