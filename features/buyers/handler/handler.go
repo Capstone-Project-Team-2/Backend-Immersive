@@ -78,11 +78,10 @@ func (h *BuyerHandler) Create(c echo.Context) error {
 		if strings.Contains(err.Error(), "validation") {
 			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+" "+err.Error(), nil))
 		} else {
-			return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
+			return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500+" "+err.Error(), nil))
 		}
 	}
 	return c.JSON(http.StatusCreated, helpers.WebResponse(http.StatusCreated, "operation success", nil))
-
 }
 func (h *BuyerHandler) GetAll(c echo.Context) error {
 	_, role := middlewares.ExtractToken(c)
