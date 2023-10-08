@@ -37,21 +37,21 @@ func (*AdminData) GetAll() ([]admins.AdminCore, error) {
 }
 
 // Login implements admins.AdminDataInterface.
-func (repo *AdminData) Login(email string, password string) (string, string, error) {
+func (repo *AdminData) Login(email string, password string) (string, string, string, error) {
 	var adminModel Admin
 	tx := repo.db.Where("email = ?", email).First(&adminModel)
 	if tx.Error != nil {
-		return "", "", tx.Error
+		return "", "", "", tx.Error
 	}
 	check := helpers.CheckPassword(password, adminModel.Password)
 	if !check {
-		return "", "", errors.New("invalid password")
+		return "", "", "", errors.New("invalid password")
 	}
-	token, errToken := middlewares.CreateToken(adminModel.ID, "Admin")
+	token, errToken := middlewares.CreateToken(adminModel.ID, adminModel.Role)
 	if errToken != nil {
-		return "", "", errToken
+		return "", "", "", errToken
 	}
-	return token, adminModel.ID, nil
+	return token, adminModel.ID, adminModel.Role, nil
 }
 
 // Update implements admins.AdminDataInterface.
