@@ -7,16 +7,17 @@ import (
 )
 
 type EventResponse struct {
-	ID            string                         `json:"id" form:"id"`
-	Name          string                         `json:"name" form:"name"`
-	Location      string                         `json:"location" form:"location"`
-	Description   string                         `json:"description" form:"description"`
-	TermCondition string                         `json:"term_condition" form:"term_condition"`
-	StartDate     string                         `json:"start_date" form:"end_date"`
-	EndDate       string                         `json:"end_date" form:"end_date"`
-	BannerPicture string                         `json:"banner_picture" form:"banner_picture"`
-	Partner       partnerHandler.PartnerResponse `json:"partner" form:"partner"`
-	Ticket        []TicketResponse               `json:"ticket,omitempty" form:"ticket"`
+	ID               string                         `json:"id" form:"id"`
+	Name             string                         `json:"name" form:"name"`
+	Location         string                         `json:"location" form:"location"`
+	Description      string                         `json:"description" form:"description"`
+	TermCondition    string                         `json:"term_condition" form:"term_condition"`
+	StartDate        string                         `json:"start_date" form:"end_date"`
+	EndDate          string                         `json:"end_date" form:"end_date"`
+	ValidationStatus string                         `json:"validation_status" form:"validation_status"`
+	BannerPicture    string                         `json:"banner_picture" form:"banner_picture"`
+	Partner          partnerHandler.PartnerResponse `json:"partner" form:"partner"`
+	Ticket           []TicketResponse               `json:"ticket,omitempty" form:"ticket"`
 }
 
 type TicketResponse struct {
@@ -31,16 +32,17 @@ type TicketResponse struct {
 
 func EventCoreToResponse(input events.EventCore) EventResponse {
 	var eventResp = EventResponse{
-		ID:            input.ID,
-		Name:          input.Name,
-		Location:      input.Location,
-		Description:   input.Description,
-		TermCondition: input.TermCondition,
-		StartDate:     helpers.ParseTimeToString(input.StartDate),
-		EndDate:       helpers.ParseTimeToString(input.EndDate),
-		BannerPicture: helpers.FileFetchEvent + input.BannerPicture,
-		Partner:       partnerHandler.PartnerCoreToResponse(input.Partner),
-		Ticket:        ListTicketCoreToResponse(input.Ticket),
+		ID:               input.ID,
+		Name:             input.Name,
+		Location:         input.Location,
+		Description:      input.Description,
+		TermCondition:    input.TermCondition,
+		StartDate:        helpers.ParseTimeToString(input.StartDate),
+		EndDate:          helpers.ParseTimeToString(input.EndDate),
+		ValidationStatus: input.ValidationStatus,
+		BannerPicture:    helpers.FileFetchEvent + input.BannerPicture,
+		Partner:          partnerHandler.PartnerCoreToResponse(input.Partner),
+		Ticket:           ListTicketCoreToResponse(input.Ticket),
 	}
 	return eventResp
 }
@@ -49,15 +51,16 @@ func ListEventCoreToResponse(input []events.EventCore) []EventResponse {
 	var eventResp []EventResponse
 	for _, value := range input {
 		var event = EventResponse{
-			ID:            value.ID,
-			Name:          value.Name,
-			Location:      value.Location,
-			Description:   value.Description,
-			TermCondition: value.TermCondition,
-			StartDate:     helpers.ParseTimeToString(value.StartDate),
-			EndDate:       helpers.ParseTimeToString(value.EndDate),
-			BannerPicture: helpers.FileFetchEvent + value.BannerPicture,
-			Partner:       partnerHandler.PartnerCoreToResponse(value.Partner),
+			ID:               value.ID,
+			Name:             value.Name,
+			Location:         value.Location,
+			Description:      value.Description,
+			TermCondition:    value.TermCondition,
+			StartDate:        helpers.ParseTimeToString(value.StartDate),
+			EndDate:          helpers.ParseTimeToString(value.EndDate),
+			ValidationStatus: value.ValidationStatus,
+			BannerPicture:    helpers.FileFetchEvent + value.BannerPicture,
+			Partner:          partnerHandler.PartnerCoreToResponse(value.Partner),
 		}
 		eventResp = append(eventResp, event)
 	}
