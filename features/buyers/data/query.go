@@ -46,7 +46,7 @@ func (r *buyerQuery) Insert(input buyers.BuyerCore, file multipart.File) error {
 
 	tx := r.db.Create(&NewData)
 	if tx.Error != nil {
-		return errors.New("error insert data")
+		return tx.Error
 	}
 
 	if tx.RowsAffected == 0 {
