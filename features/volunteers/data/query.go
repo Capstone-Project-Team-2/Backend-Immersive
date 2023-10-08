@@ -5,6 +5,7 @@ import (
 	"capstone-tickets/features/volunteers"
 	"capstone-tickets/helpers"
 	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -56,7 +57,7 @@ func (r *volunteerQuery) Login(email string, password string) (string, string, e
 	var dataVolunteer Volunteer
 	tx := r.db.Where("email=?", email).First(&dataVolunteer)
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
-		return "", "", errors.New("invalid email and password")
+		return "", "", errors.New("invalid email")
 	}
 
 	if tx.RowsAffected == 0 {
@@ -91,19 +92,41 @@ func (r *volunteerQuery) Select(id string) (volunteers.VolunteerCore, error) {
 }
 
 // SelectAll implements volunteers.VolunteerDataInterface.
-func (r *volunteerQuery) SelectAll(eventId string) ([]volunteers.VolunteerCore, error) {
+func (r *volunteerQuery) SelectAll(eventId string, param volunteers.QueryParam) (int64, []volunteers.VolunteerCore, error) {
 	var volunteer []Volunteer
-	tx := r.db.Where("event_id = ?", eventId).Find(&volunteer)
+	var totalVolunteer int64
+	// Initial query
+	query := r.db
+	if param.ExistOtherPage {
+		offset := (param.Page - 1) * param.LimitPerPage
+		fmt.Println("offset", offset)
+		if param.SearchName != "" {
+			query = query.Where("name like ?", "%"+param.SearchName+"%")
+		}
+		tx := query.Find(&volunteer)
+		if tx.Error != nil {
+			return 0, nil, errors.New("failed get all volunteer")
+		}
+		totalVolunteer = tx.RowsAffected
+		fmt.Println(totalVolunteer)
+		query = query.Offset(offset).Limit(param.LimitPerPage)
+	}
+	// Handle searching by description if provided
+	if param.SearchName != "" {
+		query = query.Where("name like ?", "%"+param.SearchName+"%")
+	}
+	fmt.Println(param.SearchName)
+	tx := query.Where("event_id = ?", eventId).Find(&volunteer)
 	if tx.Error != nil {
-		return nil, tx.Error
+		return 0, nil, tx.Error
 	}
 	if tx.RowsAffected == 0 {
-		return nil, errors.New("data not found")
+		return 0, nil, errors.New("data not found")
 	}
 
 	//mapping from volunteer -> VolunteerCore
 	coreVolunteerSlice := ListVolunteerModelToCore(volunteer)
-	return coreVolunteerSlice, nil
+	return totalVolunteer, coreVolunteerSlice, nil
 }
 
 // Update implements volunteers.VolunteerDataInterface.
