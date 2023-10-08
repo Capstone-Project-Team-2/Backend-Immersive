@@ -46,15 +46,12 @@ func (r *buyerQuery) Insert(input buyers.BuyerCore, file multipart.File) error {
 
 	tx := r.db.Create(&NewData)
 	if tx.Error != nil {
-		// log.Error("error insert data")
 		return errors.New("error insert data")
 	}
 
 	if tx.RowsAffected == 0 {
-		// log.Warn("no buyer has been created")
 		return errors.New("no row affected")
 	}
-	// log.Sugar().Infof("new buyer has been created: %s", NewData.Email)
 	return nil
 }
 
