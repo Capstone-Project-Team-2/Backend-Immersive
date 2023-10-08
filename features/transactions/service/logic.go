@@ -37,3 +37,9 @@ func (s *TransactionService) Update(input transactions.MidtransCallbackCore) err
 	err := s.transactionRepo.Update(input)
 	return err
 }
+
+// GetAllTicketDetail implements transactions.TransactionServiceInterface.
+func (s *TransactionService) GetAllTicketDetail(buyer_id string) ([]transactions.TicketDetailCore, error) {
+	result, err := s.transactionRepo.GetAllTicketDetail(buyer_id)
+	return result, err
+}
