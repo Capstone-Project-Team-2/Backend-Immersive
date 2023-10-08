@@ -24,6 +24,10 @@ type TicketRequest struct {
 	SellEnd   string `formam:"sell_end" json:"sell_end" form:"sell_end"`
 }
 
+type ValidationRequest struct {
+	ValidationStatus string `json:"validation_status" form:"validation_status"`
+}
+
 func EventRequestToCore(input EventRequest) events.EventCore {
 	var eventCore = events.EventCore{
 		Name:          input.Name,

@@ -68,10 +68,12 @@ func (handler *EventHandler) Add(c echo.Context) error {
 }
 
 func (handler *EventHandler) GetAll(c echo.Context) error {
-	// userId, role := middlewares.ExtractToken(c)
-	// validation := c.Param("validation")
-	// execution := c.Param("execution")
-	result, err := handler.eventService.GetAll()
+	var pageParam, itemParam, searchParam string
+	pageParam = c.QueryParam("page")
+	itemParam = c.QueryParam("item")
+	searchParam = c.QueryParam("search")
+
+	result, next, err := handler.eventService.GetAll(pageParam, itemParam, searchParam)
 	if err != nil {
 		if strings.Contains(err.Error(), "no row affected") {
 			return c.JSON(http.StatusNotFound, helpers.WebResponse(http.StatusNotFound, helpers.Error404, nil))
@@ -79,7 +81,7 @@ func (handler *EventHandler) GetAll(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
 	}
 	var eventResp = ListEventCoreToResponse(result)
-	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", eventResp))
+	return c.JSON(http.StatusOK, helpers.FindAllWebResponse(http.StatusOK, "operation success", eventResp, next))
 }
 
 func (handler *EventHandler) Get(c echo.Context) error {
@@ -131,6 +133,24 @@ func (handler *EventHandler) Update(c echo.Context) error {
 	err := handler.eventService.Update(idParam, parter_id, eventCore, file)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500+" "+err.Error(), nil))
+	}
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", nil))
+}
+
+func (handler *EventHandler) Validation(c echo.Context) error {
+	_, role := middlewares.ExtractToken(c)
+	if role != "Admin" && role != "Superadmin" {
+		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
+	}
+	event_id := c.Param("event_id")
+	var valid ValidationRequest
+	errBind := c.Bind(&valid)
+	if errBind != nil {
+		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+""+errBind.Error(), nil))
+	}
+	err := handler.eventService.Validate(event_id, valid.ValidationStatus)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
 	}
 	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "operation success", nil))
 }

@@ -35,15 +35,17 @@ type TicketCore struct {
 type EventDataInterface interface {
 	Insert(input EventCore, file multipart.File) error
 	Select(id string) (EventCore, error)
-	SelectAll() ([]EventCore, error)
+	SelectAll(page, item, search string) ([]EventCore, bool, error)
 	Update(event_id, partner_id string, input EventCore, file multipart.File) error
-	Delete(id string) error
+	Delete(event_id string) error
+	Validate(event_id, validation_status string) error
 }
 
 type EventServiceInterface interface {
 	Add(input EventCore, file multipart.File) error
 	Get(id string) (EventCore, error)
-	GetAll() ([]EventCore, error)
+	GetAll(page, item, search string) ([]EventCore, bool, error)
 	Update(event_id, partner_id string, input EventCore, file multipart.File) error
-	Delete(id string) error
+	Delete(event_id string) error
+	Validate(event_id, validation_status string) error
 }

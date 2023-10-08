@@ -15,6 +15,12 @@ func New(repo events.EventDataInterface) events.EventServiceInterface {
 	}
 }
 
+// Validate implements events.EventServiceInterface.
+func (service *EventService) Validate(event_id, validation_status string) error {
+	err := service.eventData.Validate(event_id, validation_status)
+	return err
+}
+
 // Add implements events.EventServiceInterface.
 func (service *EventService) Add(input events.EventCore, file multipart.File) error {
 	err := service.eventData.Insert(input, file)
@@ -33,9 +39,9 @@ func (service *EventService) Get(id string) (events.EventCore, error) {
 }
 
 // GetAll implements events.EventServiceInterface.
-func (service *EventService) GetAll() ([]events.EventCore, error) {
-	result, err := service.eventData.SelectAll()
-	return result, err
+func (service *EventService) GetAll(page, item, search string) ([]events.EventCore, bool, error) {
+	result, next, err := service.eventData.SelectAll(page, item, search)
+	return result, next, err
 }
 
 // Update implements events.EventServiceInterface.
