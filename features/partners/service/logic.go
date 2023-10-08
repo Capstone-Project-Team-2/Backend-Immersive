@@ -40,9 +40,9 @@ func (service *PartnerService) Get(id string) (partners.PartnerCore, error) {
 }
 
 // GetAll implements partners.PartnerServiceInterface.
-func (service *PartnerService) GetAll() ([]partners.PartnerCore, error) {
-	result, err := service.PartnerData.SelectAll()
-	return result, err
+func (service *PartnerService) GetAll(page, item, search string) ([]partners.PartnerCore, bool, error) {
+	result, next, err := service.PartnerData.SelectAll(page, item, search)
+	return result, next, err
 }
 
 // Update implements partners.PartnerServiceInterface.

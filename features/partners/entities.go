@@ -17,7 +17,7 @@ type PartnerCore struct {
 }
 
 type PartnerDataInterface interface {
-	SelectAll() ([]PartnerCore, error)
+	SelectAll(page, item, search string) ([]PartnerCore, bool, error)
 	Select(id string) (PartnerCore, error)
 	Insert(input PartnerCore, file multipart.File) error
 	Update(id string, input PartnerCore, file multipart.File) error
@@ -26,7 +26,7 @@ type PartnerDataInterface interface {
 }
 
 type PartnerServiceInterface interface {
-	GetAll() ([]PartnerCore, error)
+	GetAll(page, item, search string) ([]PartnerCore, bool, error)
 	Get(id string) (PartnerCore, error)
 	Add(input PartnerCore, file multipart.File) error
 	Update(id string, input PartnerCore, file multipart.File) error
