@@ -5,7 +5,9 @@ import (
 	"capstone-tickets/features/partners"
 	"capstone-tickets/helpers"
 	"errors"
+	"fmt"
 	"mime/multipart"
+	"strconv"
 
 	"gorm.io/gorm"
 )
@@ -97,17 +99,65 @@ func (repo *PartnerData) Select(id string) (partners.PartnerCore, error) {
 }
 
 // SelectAll implements partners.PartnerDataInterface.
-func (repo *PartnerData) SelectAll() ([]partners.PartnerCore, error) {
+func (repo *PartnerData) SelectAll(page, item, search string) ([]partners.PartnerCore, bool, error) {
 	var partner []Partner
-	tx := repo.db.Find(&partner)
+	var tx *gorm.DB
+	var query = repo.db
+
+	fmt.Println(search)
+	if search != "" {
+		query = query.Where("name like ?", "%"+search+"%")
+	}
+
+	queryCount := query
+	tx = queryCount.Find(&partner)
 	if tx.Error != nil {
-		return nil, tx.Error
+		return nil, false, tx.Error
 	}
 	if tx.RowsAffected == 0 {
-		return nil, errNoRow
+		return nil, false, errNoRow
 	}
+
+	count := tx.RowsAffected
+
+	var pageConv, itemConv int
+	var errPage, errItem error
+	if page != "" && item != "" {
+		pageConv, errPage = strconv.Atoi(page)
+		if errPage != nil {
+			return nil, false, errPage
+		}
+		itemConv, errItem = strconv.Atoi(item)
+		if errItem != nil {
+			return nil, false, errItem
+		}
+		limit := itemConv
+		offset := itemConv * (pageConv - 1)
+		query = query.Limit(limit).Offset(offset)
+		fmt.Println(limit, offset)
+	}
+
+	tx = query.Find(&partner)
+	if tx.Error != nil {
+		return nil, false, tx.Error
+	}
+	if tx.RowsAffected == 0 {
+		return nil, false, errNoRow
+	}
+
+	next := true
+	if itemConv != 0 {
+		var totalPage = count / int64(itemConv)
+		if count%int64(itemConv) != 0 {
+			totalPage += 1
+		}
+		if totalPage == int64(pageConv) {
+			next = false
+		}
+	}
+
 	var partnerCore = ListPartnerModelToCore(partner)
-	return partnerCore, nil
+	return partnerCore, next, nil
 }
 
 // Update implements partners.PartnerDataInterface.

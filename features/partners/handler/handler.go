@@ -44,16 +44,22 @@ func (handler *PartnerHandler) Login(c echo.Context) error {
 }
 
 func (handler *PartnerHandler) GetAll(c echo.Context) error {
+	var pageParam, itemParam, searchParam string
 	_, role := middlewares.ExtractToken(c)
+
+	pageParam = c.QueryParam("page")
+	itemParam = c.QueryParam("item")
+	searchParam = c.QueryParam("search")
+
 	if role != "Admin" && role != "Superadmin" {
 		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
 	}
-	result, err := handler.PartnerService.GetAll()
+	result, next, err := handler.PartnerService.GetAll(pageParam, itemParam, searchParam)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500+" "+err.Error(), nil))
 	}
 	var partnerResp = ListPartnerCoreToResponse(result)
-	return c.JSON(http.StatusOK, helpers.FindAllWebResponse(http.StatusOK, "operation success", partnerResp, false))
+	return c.JSON(http.StatusOK, helpers.FindAllWebResponse(http.StatusOK, "operation success", partnerResp, next))
 }
 
 func (handler *PartnerHandler) Add(c echo.Context) error {
