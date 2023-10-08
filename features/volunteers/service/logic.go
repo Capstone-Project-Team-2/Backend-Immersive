@@ -3,7 +3,6 @@ package service
 import (
 	"capstone-tickets/features/volunteers"
 	"capstone-tickets/helpers"
-	"errors"
 
 	"github.com/go-playground/validator"
 )
@@ -24,13 +23,11 @@ func New(repo volunteers.VolunteerDataInterface) volunteers.VolunteerServiceInte
 
 // Create implements volunteers.VolunteerServiceInterface.
 func (s *VolunteerService) Create(input volunteers.VolunteerCore) error {
-	err := s.validate.Struct(input)
-	if err != nil {
-		log.Error(err.Error())
-		return err
+	if errValidate := s.validate.Struct(input); errValidate != nil {
+		return errValidate
 	}
 
-	err = s.volunteerRepo.Insert(input)
+	err := s.volunteerRepo.Insert(input)
 	if err != nil {
 		log.Error(err.Error())
 		return err
@@ -40,8 +37,13 @@ func (s *VolunteerService) Create(input volunteers.VolunteerCore) error {
 
 // Login implements volunteers.VolunteerServiceInterface.
 func (s *VolunteerService) Login(email string, password string) (string, string, error) {
-	if email == "" || password == "" {
-		return "", "", errors.New("Email and Password cannot be empty")
+	loginInput := volunteers.Login{
+		Email:    email,
+		Password: password,
+	}
+	errValidate := s.validate.Struct(loginInput)
+	if errValidate != nil {
+		return "", "", errValidate
 	}
 	id, token, err := s.volunteerRepo.Login(email, password)
 	return id, token, err
@@ -57,12 +59,30 @@ func (s *VolunteerService) DeleteById(id string) error {
 }
 
 // GetAll implements volunteers.VolunteerServiceInterface.
-func (s *VolunteerService) GetAll(eventId string) ([]volunteers.VolunteerCore, error) {
-	result, err := s.volunteerRepo.SelectAll(eventId)
+func (s *VolunteerService) GetAll(eventId string, param volunteers.QueryParam) (bool, []volunteers.VolunteerCore, error) {
+	var totalPage int64
+	nextPage := true
+	count, dataVolunteer, err := s.volunteerRepo.SelectAll(eventId, param)
 	if err != nil {
-		return nil, err
+		return true, nil, err
 	}
-	return result, nil
+	if count == 0 {
+		nextPage = false
+	}
+	if param.ExistOtherPage || count != 0 {
+		totalPage = count / int64(param.LimitPerPage)
+		if count%int64(param.LimitPerPage) != 0 {
+			totalPage += 1
+		}
+
+		if param.Page == int(totalPage) {
+			nextPage = false
+		}
+		if dataVolunteer == nil {
+			nextPage = false
+		}
+	}
+	return nextPage, dataVolunteer, nil
 }
 
 // GetById implements volunteers.VolunteerServiceInterface.

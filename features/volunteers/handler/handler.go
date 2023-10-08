@@ -6,6 +6,7 @@ import (
 	"capstone-tickets/helpers"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -59,8 +60,11 @@ func (h *VolunteerHandler) Create(c echo.Context) error {
 
 	err := h.volunteerService.Create(newInput)
 	if err != nil {
-		log.Error("handler-internal server error")
-		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
+		if strings.Contains(err.Error(), "validation") {
+			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400+" "+err.Error(), nil))
+		} else {
+			return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
+		}
 	}
 	return c.JSON(http.StatusCreated, helpers.WebResponse(http.StatusCreated, "operation success", nil))
 
@@ -70,13 +74,38 @@ func (h *VolunteerHandler) GetAll(c echo.Context) error {
 	if role != "Partner" {
 		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
 	}
+	var qParam volunteers.QueryParam
+	page := c.QueryParam("page")
+	limitPerPage := c.QueryParam("limitPerPage")
+
+	if limitPerPage == "" {
+		qParam.ExistOtherPage = false
+	} else {
+		qParam.ExistOtherPage = true
+		itemsConv, errItem := strconv.Atoi(limitPerPage)
+		if errItem != nil {
+			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
+		}
+		qParam.LimitPerPage = itemsConv
+	}
+	if page == "" {
+		qParam.Page = 1
+	} else {
+		pageConv, errPage := strconv.Atoi(page)
+		if errPage != nil {
+			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, helpers.Error400, nil))
+		}
+		qParam.Page = pageConv
+	}
+	searchName := c.QueryParam("search_name")
+	qParam.SearchName = searchName
 	idParam := c.Param("event_id")
-	result, err := h.volunteerService.GetAll(idParam)
+	bol, data, err := h.volunteerService.GetAll(idParam, qParam)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, helpers.Error500, nil))
 	}
-	var partnerResp = ListVolunteerCoreToResponse(result)
-	return c.JSON(http.StatusOK, helpers.FindAllWebResponse(http.StatusOK, "operation success", partnerResp, false))
+	var volunteerResp = ListVolunteerCoreToResponse(data)
+	return c.JSON(http.StatusOK, helpers.FindAllWebResponse(http.StatusOK, "operation success", volunteerResp, bol))
 }
 
 func (h *VolunteerHandler) GetById(c echo.Context) error {

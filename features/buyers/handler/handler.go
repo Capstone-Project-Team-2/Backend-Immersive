@@ -86,7 +86,7 @@ func (h *BuyerHandler) Create(c echo.Context) error {
 }
 func (h *BuyerHandler) GetAll(c echo.Context) error {
 	_, role := middlewares.ExtractToken(c)
-	if role != "Admin" {
+	if role != "Admin" && role != "Superadmin" {
 		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, helpers.Error401, nil))
 	}
 	var qParam buyers.QueryParam
