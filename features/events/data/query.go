@@ -85,7 +85,7 @@ func (repo *EventQuery) Select(id string) (events.EventCore, error) {
 func (repo *EventQuery) SelectAll(page, item, search string) ([]events.EventCore, bool, error) {
 	var eventData []Event
 	var tx *gorm.DB
-	var query = repo.db.Where("execution_status = ? and end_date > NOW() order by created_at desc", "On Going").Preload("Partner")
+	var query = repo.db.Where("execution_status = ? and end_date > NOW()", "On Going").Order("created_at desc").Preload("Partner")
 
 	if search != "" {
 		query = query.Where("name like ?", "%"+search+"%")
