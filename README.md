@@ -56,5 +56,5 @@ Midtrans Server and Client keys are found on your Midtrans Dashboard. For refere
 This API documentation can be viewed on [SwaggerHub](https://app.swaggerhub.com/apis-docs/Capstone-BE18/Capstone-Project-Tickets/1.0.0).
 
 ## Collaborator
-- Farihatul Ilmiyya
-- Mohammad Hadi Hamdam
+- Farihatul Ilmiyya - [Github](https://github.com/Farihatul-ilmiyya)
+- Mohammad Hadi Hamdam - [Github](https://github.com/Hadi1Hamdam)
