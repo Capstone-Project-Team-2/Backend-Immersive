@@ -26,6 +26,43 @@ func New(database *gorm.DB) transactions.TransactionDataInterface {
 	}
 }
 
+// Validation implements transactions.TransactionDataInterface.
+func (r *transactionQuery) Validation(data transactions.TransactionCore) error {
+	var event _eventData.Event
+	tx1 := r.db.Where("id=?", data.EventID).First(&event)
+	if tx1.Error != nil {
+		return tx1.Error
+	}
+	if event.ValidationStatus != "Valid" {
+		return errors.New("event belum divalidasi")
+	}
+
+	var count = map[string]int{}
+	for _, v := range data.TicketDetail {
+		_, exist := count[v.TicketID]
+		if !exist {
+			count[v.TicketID] = 1
+		} else {
+			count[v.TicketID] += 1
+		}
+	}
+
+	var ticket _eventData.Ticket
+	for key, v := range count {
+		tx2 := r.db.Where("id =? and sell_start <= NOW() and sell_end > NOW()", key).First(&ticket)
+		if tx2.Error != nil {
+			return tx2.Error
+		}
+		if tx2.RowsAffected == 0 {
+			return errors.New("tiket tidak tersedia")
+		}
+		if ticket.Total < uint(v) {
+			return errors.New("tiket tidak mencukupi")
+		}
+	}
+	return nil
+}
+
 // GetAllPaymentMethode implements transactions.TransactionDataInterface.
 func (r *transactionQuery) GetAllPaymentMethod() ([]transactions.PaymentMethodCore, error) {
 	var payment []PaymentMethod
@@ -47,18 +84,9 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 	//2. pengecekan stok tiket
 	var transactionModel = TransactionCoreToModel(data)
 
-	var event _eventData.Event
-	errTx := tx.Where("id=?", data.EventID).First(&event).Error
-	if errTx != nil {
-		return errTx
-	}
-
-	if event.ValidationStatus != "Valid" {
-		return errors.New("event belum divalidasi")
-	}
-
 	var count = map[string]int{}
 	var paymentTotal float64
+
 	for i, v := range transactionModel.TicketDetail {
 		var errGen error
 		transactionModel.TicketDetail[i].ID, errGen = helpers.GenerateUUID()
@@ -66,40 +94,35 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 			return errGen
 		}
 
-		transactionModel.TicketDetail[i].BuyerID = buyer_id
 		_, exist := count[v.TicketID]
 		if !exist {
 			count[v.TicketID] = 1
 		} else {
 			count[v.TicketID] += 1
 		}
+
+		transactionModel.TicketDetail[i].BuyerID = buyer_id
 	}
 
 	for key, v := range count {
 		var ticket _eventData.Ticket
-		//3.pengecekan waktu penjualan tiket
-		err := tx.Where("id =? and sell_start <= NOW() and sell_end > NOW()", key).First(&ticket).Error
+		err := tx.Where("id =?", key).First(&ticket).Error
 		if err != nil {
 			tx.Rollback()
-			return errors.New("tiket tidak tersedia " + err.Error())
+			return err
 		}
-
-		//4. hitung total pembayaran dan stok tiket
+		//hitung total pembayaran dan stok tiket
 		paymentTotal = paymentTotal + (float64(ticket.Price) * float64(v))
-		if ticket.Total < uint(v) {
-			tx.Rollback()
-			return errors.New("tiket tidak mencukupi" + err.Error())
-		}
 	}
 
-	uuid, err := helpers.GenerateUUID()
+	var payment PaymentMethod
+	err := tx.Where("id=?", transactionModel.PaymentMethod).First(&payment).Error
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	var payment PaymentMethod
-	err = tx.Where("id=?", transactionModel.PaymentMethod).First(&payment).Error
+	uuid, err := helpers.GenerateUUID()
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -221,12 +244,6 @@ func (r *transactionQuery) Select(transaction_id, buyer_id string) (transactions
 func (r *transactionQuery) Update(input transactions.MidtransCallbackCore) error {
 	tx := r.db.Begin()
 	var err error
-
-	var sign = CheckSignatureKey(input.SignatureKey, input.OrderID, input.StatusCode, input.GrossAmount, config.KEY_SERVER)
-	if !sign {
-		return errors.New("signature unvalid")
-	}
-
 	var transaksiUpdate Transaction
 
 	transaksiUpdate.OrderID = input.TransactionID

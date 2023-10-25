@@ -1,8 +1,11 @@
 package service
 
 import (
+	"capstone-tickets/apps/config"
 	"capstone-tickets/features/events"
 	"capstone-tickets/features/transactions"
+	_midtransData "capstone-tickets/features/transactions/data"
+	"errors"
 )
 
 type TransactionService struct {
@@ -23,6 +26,11 @@ func (s *TransactionService) GetAllPaymentMethod() ([]transactions.PaymentMethod
 
 // Create implements transactions.TransactionServiceInterface.
 func (s *TransactionService) Create(data transactions.TransactionCore, buyer_id string) error {
+	errVal := s.transactionRepo.Validation(data)
+	if errVal != nil {
+		return errVal
+	}
+
 	err := s.transactionRepo.Insert(data, buyer_id)
 	if err != nil {
 		return err
@@ -41,6 +49,10 @@ func (s *TransactionService) Get(transaction_id, buyer_id string) (transactions.
 
 // Update implements transactions.TransactionServiceInterface.
 func (s *TransactionService) Update(input transactions.MidtransCallbackCore) error {
+	signature := _midtransData.CheckSignatureKey(input.SignatureKey, input.OrderID, input.StatusCode, input.GrossAmount, config.KEY_SERVER)
+	if !signature {
+		return errors.New("signature key not valid")
+	}
 	err := s.transactionRepo.Update(input)
 	return err
 }
