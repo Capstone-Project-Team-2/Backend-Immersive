@@ -52,6 +52,8 @@ type TransactionDataInterface interface {
 	Update(input MidtransCallbackCore) error
 	GetAllTicketDetail(buyer_id string) ([]TicketDetailCore, error)
 	GetAllPaymentMethod() ([]PaymentMethodCore, error)
+	Validation(data TransactionCore) error
+	// 1 event valid, 2. waktu penjualan tiket, 3. Kuota ticket
 }
 type TransactionServiceInterface interface {
 	Create(data TransactionCore, buyer_id string) error
