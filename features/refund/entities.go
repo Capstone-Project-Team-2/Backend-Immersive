@@ -2,9 +2,9 @@ package refund
 
 type RefundCore struct {
 	ID                string
-	TransactionID     string
+	TransactionID     int
 	RefundDestination string
 	RefundStatus      string
 	PaymentStatus     string
-	PaymentTotal      uint
+	PaymentTotal      float64
 }

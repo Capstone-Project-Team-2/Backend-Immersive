@@ -106,7 +106,7 @@ func (r *transactionQuery) Insert(data transactions.TransactionCore, buyer_id st
 	}
 
 	transactionModel.ID = uuid
-	transactionModel.PaymentTotal = paymentTotal + payment.ServiceFee
+	transactionModel.PaymentTotal = paymentTotal + payment.ServiceFee 
 	transactionModel.BuyerID = buyer_id
 
 	var bank = BankTransfer{
