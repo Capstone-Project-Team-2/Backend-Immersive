@@ -47,8 +47,8 @@ func (r *transactionQuery) Validation(data transactions.TransactionCore) error {
 		}
 	}
 
-	var ticket _eventData.Ticket
 	for key, v := range count {
+		var ticket _eventData.Ticket
 		tx2 := r.db.Where("id =? and sell_start <= NOW() and sell_end > NOW()", key).First(&ticket)
 		if tx2.Error != nil {
 			return tx2.Error
